@@ -1,0 +1,46 @@
+{
+  "manifest_version": 3,
+  "name": "PreVibe - AI Vibe Check",
+  "version": "1.0.0",
+  "description": "Analyze tone, sentiment, and clarity of YouTube descriptions or transcripts using Chrome's Built-in AI APIs.",
+  
+  "permissions": [
+    "activeTab",
+    "storage",
+    "scripting",
+    "aiLanguageModel"             
+  ],
+  "host_permissions": [
+    "https://*/*",
+    "http://*/*"
+  ],
+
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+
+  "background": {
+    "service_worker": "background.js"
+  },
+
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.youtube.com/*",
+        "https://studio.youtube.com/*"
+      ],
+      "js": ["content.js"]
+    }
+  ],
+
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
