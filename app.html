@@ -13,7 +13,7 @@
         <!-- Sidebar with History -->
         <aside class="sidebar">
             <div class="sidebar-header">
-                <img src="icons/icon48.png" alt="PreVibe" class="logo">
+                <img src="icons/icon128.png" alt="PreVibe" class="logo">
                 <h2>PreVibe</h2>
             </div>
 
@@ -34,38 +34,200 @@
 
         <!-- Main Content Area -->
         <main class="main-content">
+            <!-- Header -->
             <header class="app-header">
-                <h1>Content Analysis</h1>
+                <div class="header-left">
+                    <h1>PreVibe Check</h1>
+                    <span id="aiStatus" class="ai-status">Loading...</span>
+                </div>
+                <div class="header-right">
+                    <button id="themeToggle" class="icon-btn" title="Toggle Dark Mode">🌙</button>
+                    <button id="settingsBtn" class="icon-btn" title="Settings">⚙️</button>
+                </div>
             </header>
 
-            <!-- Input Form -->
-            <div id="inputSection" class="input-section">
-                <textarea 
-                    id="contentInput" 
-                    placeholder="Paste YouTube video description, social media post, or any content you want to analyze..."
-                    rows="8"
-                ></textarea>
-                <button id="analyzeBtn" class="analyze-btn">Analyze Content</button>
+            <!-- Tab Navigation -->
+            <nav class="tab-nav">
+                <button class="tab-btn active" data-tab="manual">📄 Manual Entry</button>
+                <button class="tab-btn" data-tab="youtube">🎬 YouTube Link</button>
+                <button class="tab-btn" data-tab="guide">📖 Guide</button>
+            </nav>
+
+            <!-- Manual Entry Tab -->
+            <div id="manualTab" class="tab-content active">
+                <div class="upload-section">
+                    <h2>Analyze Your Content</h2>
+                    <p class="help-text">Paste or upload transcript, add thumbnail for comprehensive analysis</p>
+
+                    <!-- Text Input -->
+                    <div class="upload-card">
+                        <div class="upload-header">
+                            <h3>📝 Content / Transcript</h3>
+                            <span class="required" style="background: #fef3c7; color: #92400e; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Required - Use text OR file</span>
+                        </div>
+                        <textarea
+                            id="contentInput"
+                            placeholder="Paste your YouTube description, video transcript, or any content here..."
+                            rows="8"
+                        ></textarea>
+
+                        <div class="divider">OR</div>
+
+                        <label class="upload-btn-secondary">
+                            <input type="file" id="transcriptUploadFull" accept=".txt,.srt,.vtt" hidden>
+                            <span>📄 Upload Transcript File (.txt, .srt, .vtt)</span>
+                        </label>
+                        <div id="transcriptInfo" class="file-info"></div>
+                    </div>
+
+                    <!-- Thumbnail Upload -->
+                    <div class="upload-card">
+                        <div class="upload-header">
+                            <h3>📷 Thumbnail Image</h3>
+                            <span class="optional">Optional</span>
+                        </div>
+                        <p class="upload-desc">Upload thumbnail for visual analysis (multimodal AI)</p>
+                        <label class="upload-btn-secondary">
+                            <input type="file" id="imageUploadFull" accept="image/*" hidden>
+                            <span>📷 Choose Thumbnail</span>
+                        </label>
+                        <div id="imageInfo" class="file-info"></div>
+                    </div>
+
+                    <button id="analyzeManualBtn" class="analyze-btn-large">
+                        Analyze Content
+                    </button>
+                </div>
             </div>
 
-            <!-- Results Display -->
+            <!-- YouTube Link Tab -->
+            <div id="youtubeTab" class="tab-content">
+                <div class="youtube-section">
+                    <h2>Analyze YouTube Video</h2>
+                    <p class="help-text">Enter a YouTube URL to fetch and analyze the video's content</p>
+
+                    <div class="youtube-input-card">
+                        <label for="youtubeUrl">YouTube Video URL</label>
+                        <input
+                            type="url"
+                            id="youtubeUrl"
+                            placeholder="https://www.youtube.com/watch?v=..."
+                            class="youtube-input"
+                        >
+                        <p class="input-hint">Paste the full YouTube video URL</p>
+
+                        <button id="fetchYoutubeBtn" class="fetch-btn">
+                            📥 Fetch & Analyze
+                        </button>
+                    </div>
+
+                    <div id="youtubeFetchedData" class="fetched-data" style="display: none;">
+                        <h3>Fetched Content</h3>
+                        <div id="youtubeTranscriptPreview" class="transcript-preview"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Guide Tab -->
+            <div id="guideTab" class="tab-content">
+                <div class="guide-section">
+                    <h2>📖 How to Use PreVibe</h2>
+
+                    <div class="guide-card">
+                        <h3>🎯 What is PreVibe?</h3>
+                        <p>PreVibe helps YouTube creators check their content for potential reputation risks BEFORE publishing. Our AI analyzes sentiment, clarity, and controversy factors.</p>
+                    </div>
+
+                    <div class="guide-card">
+                        <h3>🚀 Quick Start</h3>
+                        <ol>
+                            <li><strong>Manual Entry:</strong> Paste text or upload transcript (.txt, .srt, .vtt)</li>
+                            <li><strong>YouTube Link:</strong> Paste any YouTube video URL for instant analysis</li>
+                            <li><strong>Add Thumbnail (Optional):</strong> Upload for multimodal AI analysis</li>
+                            <li><strong>Get Results:</strong> Review sentiment, clarity, and reputation risk</li>
+                        </ol>
+                    </div>
+
+                    <div class="guide-card">
+                        <h3>📊 What We Analyze</h3>
+                        <div class="analysis-items">
+                            <div class="analysis-item">
+                                <h4>😊 Sentiment</h4>
+                                <p>Positive, neutral, or negative tone</p>
+                            </div>
+                            <div class="analysis-item">
+                                <h4>🔍 Clarity</h4>
+                                <p>How clear and understandable</p>
+                            </div>
+                            <div class="analysis-item">
+                                <h4>⚠️ Reputation Risk</h4>
+                                <p>Potential controversial topics</p>
+                            </div>
+                            <div class="analysis-item">
+                                <h4>💡 Suggestions</h4>
+                                <p>Actionable improvements</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="guide-card">
+                        <h3>🤖 Hybrid AI Technology</h3>
+                        <ul>
+                            <li><strong>Chrome's Built-in AI (Gemini Nano):</strong> Privacy-first, on-device processing</li>
+                            <li><strong>Google Gemini Cloud API:</strong> Reliable cloud fallback</li>
+                            <li><strong>Automatic Switching:</strong> Uses best available option</li>
+                        </ul>
+                    </div>
+
+                    <div class="guide-card">
+                        <h3>🔧 Supported Formats</h3>
+                        <ul>
+                            <li><strong>Transcripts:</strong> .txt, .srt, .vtt</li>
+                            <li><strong>Images:</strong> .jpg, .png, .webp</li>
+                            <li><strong>YouTube:</strong> Any public video URL</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Section -->
             <div id="resultsSection" class="results-section" style="display: none;">
                 <div class="results-header">
                     <h2>Analysis Results</h2>
                     <button id="clearResultsBtn" class="clear-btn">Clear</button>
                 </div>
-
-                <div id="resultsContent"></div>
+                <div id="resultsContent" class="results-content"></div>
             </div>
 
             <!-- Loading State -->
             <div id="loadingState" class="loading-state" style="display: none;">
                 <div class="spinner"></div>
-                <p>Analyzing content...</p>
+                <p id="loadingText">Analyzing content...</p>
             </div>
         </main>
+
+        <!-- Settings Panel -->
+        <div id="settingsPanel" class="settings-panel" style="display: none;">
+            <div class="settings-overlay" id="settingsOverlay"></div>
+            <div class="settings-content">
+                <div class="settings-header">
+                    <h2>⚙️ Settings</h2>
+                    <button id="closeSettingsBtn" class="close-btn">×</button>
+                </div>
+                <div class="settings-body">
+                    <label for="geminiApiKey">Google Gemini API Key</label>
+                    <input type="password" id="geminiApiKey" placeholder="Enter your Gemini API key">
+                    <button id="saveApiKeyBtn" class="save-btn">Save API Key</button>
+                    <p class="settings-help">
+                        Get your free API key from
+                        <a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio</a>
+                    </p>
+                </div>
+            </div>
+        </div>
     </div>
 
+    <script src="transcript-parser.js"></script>
     <script src="app.js"></script>
 </body>
 </html>

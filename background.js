@@ -112,6 +112,31 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           }
           break;
 
+        case 'ANALYZE_CONTENT_MULTIMODAL':
+          await ensureInitialized();
+          if (!aiService) {
+            sendResponse({ success: false, error: 'AI service not initialized' });
+            break;
+          }
+
+          if (!aiService.getStatus().available) {
+            sendResponse({
+              success: false,
+              error: 'No AI provider available. Please set up Gemini API key in settings.'
+            });
+            break;
+          }
+
+          try {
+            const { text, images, audios } = message.content;
+            const analysis = await aiService.analyzeContentMultimodal({ text, images, audios });
+            sendResponse({ success: true, analysis });
+          } catch (error) {
+            console.error('Multimodal analysis error:', error);
+            sendResponse({ success: false, error: error.message });
+          }
+          break;
+
         case 'GENERATE_RESPONSE':
           if (!aiService) {
             sendResponse({ success: false, error: 'AI service not initialized' });

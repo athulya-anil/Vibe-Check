@@ -9,15 +9,30 @@
 <body>
   <div class="container">
     <header>
-      <h1>PreVibe Check</h1>
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <img src="icons/icon48.png" alt="PreVibe" style="width: 24px; height: 24px; border-radius: 6px;">
+        <h1>PreVibe</h1>
+      </div>
       <div class="header-controls">
         <span id="aiStatus" class="status-badge">Loading...</span>
+        <button id="settingsBtn" class="icon-btn" title="Settings">⚙️</button>
         <button id="openFullApp" class="icon-btn" title="Open Full App">🚀</button>
         <button id="themeToggle" class="icon-btn" title="Toggle Dark Mode">🌙</button>
       </div>
     </header>
 
-    <div id="aiProvider" class="provider-info">Checking AI availability...</div>
+    <!-- Settings Panel -->
+    <div id="settingsPanel" class="settings-panel" style="display: none;">
+      <h3>Settings</h3>
+      <div class="settings-form">
+        <label for="geminiApiKey">Google Gemini API Key</label>
+        <input type="password" id="geminiApiKey" placeholder="Enter your Gemini API key">
+        <button id="saveApiKeyBtn" class="btn-primary">Save API Key</button>
+        <div class="settings-help">
+          <small>Get your free API key from <a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio</a></small>
+        </div>
+      </div>
+    </div>
 
     <!-- Notification -->
     <div id="notification" class="notification" style="display: none;"></div>
@@ -32,6 +47,20 @@
         placeholder="Paste YouTube video description or transcript here..."
         rows="6"
       ></textarea>
+
+      <!-- Multimodal Upload Section -->
+      <div class="multimodal-section">
+        <label class="upload-label">
+          <span>📄 Add Transcript</span>
+          <input type="file" id="transcriptUpload" accept=".txt,.srt,.vtt" style="display: none;">
+        </label>
+        <label class="upload-label">
+          <span>📷 Add Thumbnail</span>
+          <input type="file" id="imageUpload" accept="image/*" style="display: none;">
+        </label>
+        <div id="uploadedFiles" class="uploaded-files"></div>
+      </div>
+
       <div class="button-group">
         <button id="analyzeBtn" class="btn-analyze">Analyze Content</button>
         <button id="clearBtn" class="btn-secondary">Clear</button>
@@ -40,10 +69,7 @@
 
     <!-- Results Section -->
     <div id="results" class="results" style="display: none;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-        <h2 style="margin: 0;">Analysis Results</h2>
-        <button id="openInTab" class="icon-btn" title="Open in New Tab" style="font-size: 18px;">🔗</button>
-      </div>
+      <h2>Analysis Results</h2>
       <div class="result-item" id="sentiment"></div>
       <div class="result-item" id="clarity"></div>
       <div class="result-item" id="risk"></div>
@@ -52,6 +78,7 @@
     </div>
   </div>
 
+  <script src="transcript-parser.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

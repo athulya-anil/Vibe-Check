@@ -1,7 +1,0 @@
-# PreVibe Chrome Extension - optional Python utilities
-
-google-generativeai>=0.5.2   # For local AI analysis prototyping
-requests>=2.31.0             # To test API endpoints or send AI queries
-beautifulsoup4>=4.12.3       # Optional: for cleaning YouTube captions/text
-pytube>=15.0.0               # Optional: to fetch YouTube transcripts locally
-

@@ -56,40 +56,57 @@ class HybridAIService {
   }
 
   /**
-   * Check if Chrome's Prompt API is available
+   * Check if Chrome's Prompt API is available (using NEW LanguageModel API)
    */
   async checkChromeAI() {
     try {
-      // Check if the API exists
-      if (!self.ai || !self.ai.languageModel) {
-        console.log('❌ self.ai.languageModel not available');
+      // Check if the NEW API exists (LanguageModel global)
+      if (typeof LanguageModel === 'undefined') {
+        console.log('❌ LanguageModel API not available');
         return false;
       }
 
-      // Check capabilities
-      const capabilities = await self.ai.languageModel.capabilities();
-      console.log('🔍 Chrome AI capabilities:', capabilities);
+      // Check availability using new API with timeout
+      const availabilityPromise = LanguageModel.availability();
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Chrome AI check timeout')), 2000)
+      );
 
-      if (capabilities.available === 'no') {
-        console.log('❌ Chrome AI capabilities: not available');
+      const availability = await Promise.race([availabilityPromise, timeoutPromise]);
+      console.log('🔍 Chrome AI availability:', availability);
+
+      if (availability === 'unavailable') {
+        console.log('❌ Chrome AI: unavailable');
         return false;
       }
 
-      if (capabilities.available === 'after-download') {
+      if (availability === 'after-download') {
         console.log('⏳ Chrome AI model needs download...');
         return false;
       }
 
-      // Try to create a session
+      // Try to create a session with MULTIMODAL support (with timeout)
       try {
-        this.chromeAISession = await self.ai.languageModel.create({
-          temperature: 0.7,
-          topK: 3,
+        const params = await LanguageModel.params();
+        const createPromise = LanguageModel.create({
+          temperature: params.defaultTemperature || 0.7,
+          topK: params.defaultTopK || 3,
+          // Enable multimodal capabilities for images and audio
+          expectedInputs: [
+            { type: "text", languages: ["en"] },
+            { type: "image" }
+          ]
         });
-        console.log('✅ Chrome AI session created successfully!');
+
+        const sessionTimeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Session creation timeout')), 3000)
+        );
+
+        this.chromeAISession = await Promise.race([createPromise, sessionTimeoutPromise]);
+        console.log('✅ Chrome AI session created with multimodal support!');
         return true;
       } catch (sessionError) {
-        console.error('❌ Failed to create Chrome AI session:', sessionError);
+        console.log('ℹ️ Chrome AI session unavailable (expected if Gemini Nano not installed)');
         return false;
       }
     } catch (error) {
@@ -305,10 +322,13 @@ class HybridAIService {
   }
 
   /**
-   * Analyze YouTube content for sentiment, clarity, and reputation risk
+   * Analyze content with MULTIMODAL support (text, images, audio)
+   * @param {Object} content - { text: string, images: File[], audios: File[] }
    */
-  async analyzeContent(text) {
-    const systemPrompt = `You are an AI content analyzer for YouTube creators. Analyze the provided text and respond ONLY with a JSON object (no markdown, no code blocks) in this exact format:
+  async analyzeContentMultimodal(content) {
+    const { text, images = [], audios = [] } = content;
+
+    const systemPrompt = `You are an AI content analyzer for YouTube creators. Respond ONLY with a JSON object (no markdown, no code blocks):
 
 {
   "sentiment": "positive/neutral/negative",
@@ -317,22 +337,64 @@ class HybridAIService {
   "clarityNotes": "brief explanation",
   "reputationRisk": "low/medium/high",
   "riskFactors": ["factor1", "factor2"],
-  "suggestions": ["suggestion1", "suggestion2"]
+  "suggestions": ["suggestion1", "suggestion2"],
+  "imageAnalysis": "if image: concise assessment (under 100 words)"
 }
 
-Be concise and actionable.`;
+IMAGE RULES:
+1. Describe what's in image (1 sentence)
+2. Compare to text topic - if different subjects, state "could be unrelated/misleading"
+3. Flag mismatches as medium/high risk
+4. Use cautious language: "could be", "may be", "appears"
+5. Keep under 100 words total`;
 
-    const prompt = `Analyze this YouTube content:\n\n${text}`;
+    let prompt = `Analyze this YouTube content:\n\nTEXT/TRANSCRIPT:\n${text}`;
 
-    const response = await this.generateResponse(prompt, systemPrompt);
+    if (images.length > 0) {
+      prompt += `\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+IMAGE ANALYSIS REQUIRED - CRITICAL COMPARISON
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The text above is about: [summarize main topic from text]
+Now examine the ${images.length} image(s) provided.
+
+STEP-BY-STEP ANALYSIS:
+
+1. **Describe Image**: What is the main subject/topic of the image?
+
+2. **CRITICAL TOPIC COMPARISON**:
+   - Does the image topic match the text topic?
+   - Example: If text is about "smart fan installation" but image shows "LinkedIn tech post", these are DIFFERENT topics
+   - If topics are different → COULD BE misleading → Set reputationRisk: "medium" or "high"
+
+3. **Check for Potentially Misleading Elements**:
+   - Sensationalized imagery not matching content
+   - Shocked faces, arrows, circles when content is straightforward
+   - Professional/technical image for entertainment content (or vice versa)
+
+4. **Controversial Visual Elements**:
+   - Offensive symbols, inappropriate imagery, violent/sexual content
+   - Hate symbols, political extremism, copyright violations
+
+5. **VERDICT** (be concise, 2-3 sentences max):
+   - If image and text discuss DIFFERENT topics → Clearly state they're unrelated and flag as potential clickbait
+   - If same topic but sensationalized → Note the clickbait elements
+   - If matching → Briefly confirm it matches
+
+IMPORTANT: Keep imageAnalysis under 100 words. Be direct and concise.`;
+    }
+    if (audios.length > 0) {
+      prompt += `\n\nNote: ${audios.length} audio file(s) provided for audio analysis.`;
+    }
+
+    // Use multimodal generation if we have media files
+    const response = images.length > 0 || audios.length > 0
+      ? await this.generateMultimodalResponse(prompt, systemPrompt, images, audios)
+      : await this.generateResponse(prompt, systemPrompt);
 
     try {
-      // Try to parse JSON from response
       let jsonText = response.text.trim();
-
-      // Remove markdown code blocks if present
       jsonText = jsonText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
-
       const analysis = JSON.parse(jsonText);
 
       return {
@@ -342,9 +404,6 @@ Be concise and actionable.`;
       };
     } catch (parseError) {
       console.error('Failed to parse AI response as JSON:', parseError);
-      console.log('Raw response:', response.text);
-
-      // Fallback: return raw text with basic structure
       return {
         sentiment: 'neutral',
         sentimentScore: 50,
@@ -358,6 +417,170 @@ Be concise and actionable.`;
         rawResponse: response.text,
       };
     }
+  }
+
+  /**
+   * Analyze YouTube content for sentiment, clarity, and reputation risk (TEXT ONLY - legacy)
+   */
+  async analyzeContent(text) {
+    return await this.analyzeContentMultimodal({ text });
+  }
+
+  /**
+   * Generate response with multimodal inputs (images and/or audio)
+   */
+  async generateMultimodalResponse(prompt, systemPrompt, images = [], audios = []) {
+    if (!this.currentProvider) {
+      throw new Error('No AI provider available.');
+    }
+
+    // Multimodal only supported with Chrome AI for now
+    if (this.currentProvider === 'chrome' && this.chromeAISession) {
+      try {
+        // Build multimodal message
+        const content = [
+          { type: 'text', value: systemPrompt ? `${systemPrompt}\n\n${prompt}` : prompt }
+        ];
+
+        // Add images
+        for (const image of images) {
+          content.push({ type: 'image', value: image });
+        }
+
+        // Add audio files
+        for (const audio of audios) {
+          content.push({ type: 'audio', value: audio });
+        }
+
+        console.log('📤 Sending multimodal request to Chrome AI...');
+        const response = await this.chromeAISession.prompt([{
+          role: 'user',
+          content: content
+        }]);
+
+        return {
+          text: response,
+          provider: 'chrome',
+          model: 'Gemini Nano (multimodal)',
+        };
+      } catch (error) {
+        console.log('ℹ️ Chrome AI unavailable, using cloud fallback');
+        // Fallback to text-only with Gemini
+        if (this.geminiApiKey) {
+          console.log('🔄 Using Gemini Cloud API...');
+          return await this.generateWithGemini(prompt, systemPrompt);
+        }
+        throw error;
+      }
+    }
+
+    // Fallback: Gemini with image support
+    if (this.geminiApiKey && images.length > 0) {
+      console.log('🔄 Using Gemini API with image support...');
+      return await this.generateWithGeminiMultimodal(prompt, systemPrompt, images);
+    }
+
+    // Final fallback: text-only
+    console.warn('⚠️ No multimodal support available. Falling back to text-only analysis.');
+    return await this.generateResponse(prompt, systemPrompt);
+  }
+
+  /**
+   * Generate response with Gemini API including images
+   */
+  async generateWithGeminiMultimodal(prompt, systemPrompt, images) {
+    if (!this.geminiApiKey) {
+      throw new Error('Gemini API key not configured');
+    }
+
+    try {
+      console.log('📤 Sending multimodal request to Gemini API...');
+
+      // Handle images - they can be File objects or already converted to base64
+      const imageParts = await Promise.all(images.map(async (image) => {
+        let base64, mimeType;
+
+        if (typeof image === 'object' && image.data) {
+          // Already converted to base64 format
+          base64 = image.data;
+          mimeType = image.mimeType || 'image/jpeg';
+        } else if (image instanceof File || image instanceof Blob) {
+          // File object - convert to base64
+          base64 = await this.fileToBase64(image);
+          mimeType = image.type || 'image/jpeg';
+        } else {
+          throw new Error('Invalid image format');
+        }
+
+        return {
+          inlineData: {
+            mimeType: mimeType,
+            data: base64
+          }
+        };
+      }));
+
+      // Build parts array: system prompt + user prompt + images
+      const parts = [
+        { text: systemPrompt ? `${systemPrompt}\n\n${prompt}` : prompt },
+        ...imageParts
+      ];
+
+      const response = await fetch(`${this.GEMINI_API_URL}?key=${this.geminiApiKey}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: parts
+          }],
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 1000,
+            topK: 40,
+            topP: 0.95
+          }
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(`Gemini API error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
+      }
+
+      const data = await response.json();
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+      if (!text) {
+        throw new Error('No text in Gemini response');
+      }
+
+      return {
+        text: text,
+        provider: 'gemini',
+        model: 'Gemini 2.0 Flash (multimodal)',
+      };
+    } catch (error) {
+      console.error('❌ Gemini multimodal error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Convert File to base64 string
+   */
+  async fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        // Remove the data URL prefix (e.g., "data:image/jpeg;base64,")
+        const base64 = reader.result.split(',')[1];
+        resolve(base64);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
   }
 
   /**

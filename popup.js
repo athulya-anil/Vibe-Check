@@ -2,6 +2,8 @@
 let currentStatus = null;
 let lastAnalysis = null;
 let lastInputText = null;
+let uploadedTranscript = null;
+let uploadedImage = null;
 
 // Initialize on load
 document.addEventListener('DOMContentLoaded', async () => {
@@ -26,6 +28,12 @@ function setupEventListeners() {
   // Theme toggle
   document.getElementById('themeToggle').addEventListener('click', toggleTheme);
 
+  // Settings button
+  document.getElementById('settingsBtn').addEventListener('click', toggleSettings);
+
+  // Save API key button
+  document.getElementById('saveApiKeyBtn').addEventListener('click', saveApiKey);
+
   // Load saved theme
   loadTheme();
 
@@ -35,6 +43,10 @@ function setupEventListeners() {
       openResultsInNewTab();
     }
   });
+
+  // File upload handlers
+  document.getElementById('transcriptUpload').addEventListener('change', handleTranscriptUpload);
+  document.getElementById('imageUpload').addEventListener('change', handleImageUpload);
 }
 
 /**
@@ -80,27 +92,17 @@ async function updateAIStatus() {
 function updateAIStatusDisplay(status) {
   currentStatus = status;
   const statusEl = document.getElementById('aiStatus');
-  const providerEl = document.getElementById('aiProvider');
 
   if (status.isOnDevice) {
-    statusEl.textContent = 'On-device AI (Gemini Nano)';
+    statusEl.textContent = '🟢 Chrome AI';
     statusEl.className = 'status-badge status-success';
-    providerEl.textContent = '✅ Using Chrome\'s built-in AI';
-    providerEl.className = 'provider-info success';
   } else if (status.isCloud) {
-    statusEl.textContent = 'Cloud AI (Gemini)';
+    statusEl.textContent = '🟡 Cloud AI';
     statusEl.className = 'status-badge status-warning';
-    providerEl.textContent = '☁️ Using Google Gemini API' +
-      (status.checkingForChromeAI ? ' (checking for on-device AI...)' : '');
-    providerEl.className = 'provider-info warning';
   } else {
-    statusEl.textContent = 'Not Available';
+    statusEl.textContent = '🔴 Not Available';
     statusEl.className = 'status-badge status-error';
-    providerEl.textContent = '❌ Please configure Gemini API key in settings';
-    providerEl.className = 'provider-info error';
   }
-
-  // Settings hint removed (API key is hardcoded for local testing)
 }
 
 /**
@@ -172,13 +174,106 @@ async function saveApiKey() {
 }
 
 /**
- * Analyze content using AI
+ * Handle transcript file upload
+ */
+async function handleTranscriptUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  try {
+    // Validate file type
+    if (!TranscriptParser.isValidTranscript(file)) {
+      showError('Please upload a .txt, .srt, or .vtt file');
+      return;
+    }
+
+    // Parse transcript
+    showLoading('Parsing transcript...');
+    const text = await TranscriptParser.parseFile(file);
+    hideLoading();
+
+    uploadedTranscript = { file, text };
+
+    // Auto-fill textarea with transcript
+    document.getElementById('inputText').value = text;
+
+    updateUploadedFilesDisplay();
+    showNotification(`Transcript loaded: ${file.name}`, 'success');
+  } catch (error) {
+    hideLoading();
+    showError('Failed to parse transcript: ' + error.message);
+  }
+
+  event.target.value = ''; // Reset input
+}
+
+/**
+ * Handle thumbnail image upload
+ */
+function handleImageUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  uploadedImage = file;
+  updateUploadedFilesDisplay();
+  showNotification(`Thumbnail uploaded: ${file.name}`, 'success');
+  event.target.value = ''; // Reset input
+}
+
+/**
+ * Update the display of uploaded files
+ */
+function updateUploadedFilesDisplay() {
+  const container = document.getElementById('uploadedFiles');
+  container.innerHTML = '';
+
+  // Display transcript
+  if (uploadedTranscript) {
+    const chip = document.createElement('div');
+    chip.className = 'file-chip';
+    chip.innerHTML = `
+      📄 ${uploadedTranscript.file.name.substring(0, 20)}${uploadedTranscript.file.name.length > 20 ? '...' : ''}
+      <span class="file-chip-remove" data-type="transcript">×</span>
+    `;
+    container.appendChild(chip);
+  }
+
+  // Display image
+  if (uploadedImage) {
+    const chip = document.createElement('div');
+    chip.className = 'file-chip';
+    chip.innerHTML = `
+      📷 ${uploadedImage.name.substring(0, 20)}${uploadedImage.name.length > 20 ? '...' : ''}
+      <span class="file-chip-remove" data-type="image">×</span>
+    `;
+    container.appendChild(chip);
+  }
+
+  // Add remove handlers
+  container.querySelectorAll('.file-chip-remove').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const type = e.target.dataset.type;
+
+      if (type === 'transcript') {
+        uploadedTranscript = null;
+        document.getElementById('inputText').value = '';
+      } else if (type === 'image') {
+        uploadedImage = null;
+      }
+
+      updateUploadedFilesDisplay();
+    });
+  });
+}
+
+/**
+ * Analyze content using AI (with multimodal support)
  */
 async function analyzeContent() {
   const input = document.getElementById('inputText').value.trim();
 
   if (!input) {
-    showError('Please enter some text to analyze');
+    showError('Please enter text or upload a transcript to analyze');
     return;
   }
 
@@ -192,11 +287,32 @@ async function analyzeContent() {
     showLoading('Analyzing content...');
     clearResults();
 
+    // Check if we have thumbnail for multimodal
+    const hasImage = uploadedImage !== null;
+
     // Send analysis request to background
-    const response = await chrome.runtime.sendMessage({
-      type: 'ANALYZE_CONTENT',
-      text: input
-    });
+    let response;
+    if (hasImage) {
+      // Convert image to base64 before sending
+      const imageBase64 = await fileToBase64(uploadedImage);
+      response = await chrome.runtime.sendMessage({
+        type: 'ANALYZE_CONTENT_MULTIMODAL',
+        content: {
+          text: input,
+          images: [{
+            data: imageBase64,
+            mimeType: uploadedImage.type || 'image/jpeg',
+            name: uploadedImage.name
+          }],
+          audios: []
+        }
+      });
+    } else {
+      response = await chrome.runtime.sendMessage({
+        type: 'ANALYZE_CONTENT',
+        text: input
+      });
+    }
 
     hideLoading();
 
@@ -268,6 +384,17 @@ async function displayResults(analysis) {
   }
 
   document.getElementById('risk').innerHTML = riskHTML;
+
+  // Image Analysis (if present)
+  if (analysis.imageAnalysis) {
+    const imageAnalysisHTML = `
+      <div class="result-item" style="background: #fef3c7; border-left-color: #f97316;">
+        <strong>🎨 Image Analysis:</strong>
+        <div class="note" style="margin-top: 4px; color: #78350f;">${analysis.imageAnalysis}</div>
+      </div>
+    `;
+    document.getElementById('risk').insertAdjacentHTML('afterend', imageAnalysisHTML);
+  }
 
   // Suggestions
   if (analysis.suggestions && analysis.suggestions.length > 0) {
@@ -372,6 +499,11 @@ async function clearAll() {
   // Clear input
   document.getElementById('inputText').value = '';
 
+  // Clear uploaded files
+  uploadedTranscript = null;
+  uploadedImage = null;
+  updateUploadedFilesDisplay();
+
   // Hide results
   document.getElementById('results').style.display = 'none';
 
@@ -423,4 +555,20 @@ async function loadTheme() {
     themeBtn.textContent = '☀️';
     themeBtn.title = 'Toggle Light Mode';
   }
+}
+
+/**
+ * Convert File to base64 string
+ */
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      // Remove the data URL prefix (e.g., "data:image/jpeg;base64,")
+      const base64 = reader.result.split(',')[1];
+      resolve(base64);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 }

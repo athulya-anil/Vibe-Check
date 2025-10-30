@@ -1,174 +1,102 @@
-# Chrome Built-in AI Setup Instructions
+# Chrome Built-in AI Setup Guide
 
-## Required for Testing PreVibe with Gemini Nano
+PreVibe requires Chrome's on-device AI (Gemini Nano) to qualify for the Chrome Built-in AI Challenge.
 
-### Step 1: Install Chrome Canary
+## Requirements
 
-Download from: https://www.google.com/chrome/canary/
+1. **Chrome Canary or Chrome Dev** (Version 128 or higher)
+   - Download: https://www.google.com/chrome/canary/
+   - Or Dev Channel: https://www.google.com/chrome/dev/
 
-**Why Chrome Canary?**
-- Chrome's Built-in AI is currently only available in Canary builds
-- Regular Chrome doesn't have Gemini Nano yet
+## Setup Steps
 
----
+### 1. Enable Chrome Flags
 
-### Step 2: Enable Required Flags
+Open Chrome and navigate to these flags:
 
-1. Open Chrome Canary
-2. Navigate to: `chrome://flags`
-3. Search for and enable these flags:
+#### Flag 1: Optimization Guide On Device Model
+```
+chrome://flags/#optimization-guide-on-device-model
+```
+- Set to: **Enabled BypassPerfRequirement**
+- This bypasses performance requirements for testing
 
-#### Flag 1: Prompt API for Gemini Nano
-- **Flag name**: `#prompt-api-for-gemini-nano`
-- **Setting**: `Enabled`
-- **What it does**: Enables the window.ai.languageModel API
+#### Flag 2: Prompt API for Gemini Nano
+```
+chrome://flags/#prompt-api-for-gemini-nano
+```
+- Set to: **Enabled**
 
-#### Flag 2: Optimization Guide On Device Model
-- **Flag name**: `#optimization-guide-on-device-model`
-- **Setting**: `Enabled`
-- **What it does**: Enables on-device model execution
+### 2. Download Gemini Nano Model
 
-#### Flag 3: Text Safety Classifier
-- **Flag name**: `#text-safety-classifier`
-- **Setting**: `Enabled`
-- **What it does**: Enables safety features for AI responses
+1. Navigate to:
+   ```
+   chrome://components/
+   ```
 
-4. Click the blue **"Relaunch"** button at the bottom
+2. Find "**Optimization Guide On Device Model**"
 
----
+3. Click "**Check for update**"
 
-### Step 3: Download Gemini Nano Model
+4. Wait for download to complete (~1.7GB)
+   - You'll see version number appear when ready
+   - Status should show "Up-to-date"
 
-1. After relaunch, navigate to: `chrome://components`
-2. Scroll down to find: **"Optimization Guide On Device Model"**
-3. Click **"Check for update"**
-4. Wait for download (1.7GB, may take 10-30 minutes)
-5. Refresh the page - version number should appear
+### 3. Restart Chrome
 
-**Note**: If "Optimization Guide On Device Model" doesn't appear in components:
-- This is a known issue
-- Chrome AI is rolling out gradually by region/account
-- Your code is still correct and will work when available!
+**Important:** Close ALL Chrome windows and restart completely.
 
----
+### 4. Verify Installation
 
-### Step 4: Verify Installation
+#### Method 1: Check in DevTools Console
+```javascript
+console.log(typeof LanguageModel !== 'undefined' ? 'Chrome AI Available' : 'Not Available');
+```
 
-**Method 1: Using DevTools**
-1. Open any webpage
-2. Press F12 (DevTools)
-3. Go to Console tab
-4. Type: `await ai.languageModel.capabilities()`
-5. Expected result: `{available: "readily"}`
-
-**Method 2: Using PreVibe Test Page**
-1. Open: `file:///Users/athulyaanil/PreVibe/test-chrome-ai.html`
-2. Click "Test Chrome AI"
-3. Should show: "✅ Chrome AI is available!"
-
----
+#### Method 2: Use PreVibe
+1. Open PreVibe extension
+2. Check status indicator in header:
+   - 🟢 "On-device AI" = Chrome AI working!
+   - 🟡 "Cloud AI" = Using Gemini fallback (Chrome AI not available)
+   - 🔴 "Not Available" = No AI configured
 
 ## Troubleshooting
 
-### Issue: "Optimization Guide" not in chrome://components
+### Chrome AI Shows as Unavailable
 
-**Why this happens:**
-- Chrome's Built-in AI is rolling out gradually
-- Not all users/regions have access yet
-- Even with correct flags, it may not appear
+1. **Check Chrome Version**
+   - Go to `chrome://version/`
+   - Must be Chrome Canary/Dev 128+
 
-**Solutions:**
-1. ✅ **Use Groq fallback** - PreVibe automatically switches
-2. ⏳ **Wait 24-48 hours** - Try again after flags have propagated
-3. 🔄 **Try different Chrome Canary version** - Update or try older version
-4. 📧 **Sign up for Chrome AI early preview** - Check Chrome Developers site
+2. **Verify Flags Are Enabled**
+   - Double-check both flags are set correctly
+   - Restart Chrome after changing flags
 
-**For hackathon submission:**
-- Your code correctly implements Chrome's Prompt API ✓
-- Judges likely have Chrome AI working on their test machines ✓
-- Demo with Groq fallback, explain Chrome AI is primary ✓
+3. **Check Model Download**
+   - Go to `chrome://components/`
+   - "Optimization Guide On Device Model" should show a version number
+   - If not, click "Check for update" and wait
 
----
+4. **Wait for Model to Load**
+   - After download, restart Chrome
+   - Model takes a few minutes to initialize on first launch
 
-### Issue: "available: 'after-download'" in capabilities
+5. **Check Console for Errors**
+   - Open DevTools (F12)
+   - Look for Chrome AI related errors
 
-**Solution:**
-- Model is queued for download
-- Check chrome://components and click "Check for update"
-- Wait for download to complete
-- Check again with `await ai.languageModel.capabilities()`
+### Still Not Working?
 
----
+**Fallback Option:** PreVibe has a hybrid AI system. If Chrome AI isn't available, it will use Google Gemini Cloud API:
 
-### Issue: Extension error "self.ai is not defined"
+1. Click Settings (⚙️) in PreVibe
+2. Enter your Gemini API key
+3. Get free key: https://aistudio.google.com/app/apikey
 
-**Solution:**
-- Make sure you enabled all 3 flags above
-- Relaunch Chrome Canary completely
-- Wait a few minutes after relaunch
-- Try refreshing the extension
+**Note:** The challenge requires Chrome's on-device AI, so please try to get Gemini Nano working for the best experience and to meet competition requirements.
 
----
+## Resources
 
-## API Implementation in PreVibe
-
-PreVibe correctly implements Chrome's Prompt API:
-
-```javascript
-// Check API availability
-if (!self.ai || !self.ai.languageModel) {
-  // Fallback to Groq
-}
-
-// Check capabilities
-const capabilities = await self.ai.languageModel.capabilities();
-
-// Create session
-this.chromeAISession = await self.ai.languageModel.create({
-  temperature: 0.7,
-  topK: 3,
-});
-
-// Generate response
-const response = await this.chromeAISession.prompt(fullPrompt);
-```
-
-See `ai-service.js` lines 56-94 for full implementation.
-
----
-
-## Current Status (October 2025)
-
-- ✅ Chrome Prompt API is live in Chrome Canary
-- ⚠️ Gemini Nano model download is region-dependent
-- ⏳ Gradual rollout still in progress
-- 🎯 Expected full release: Q4 2025
-
-**For Chrome Built-in AI Challenge submissions:**
-- Correct API implementation is what matters most
-- Judges understand the rollout limitations
-- Hybrid fallback approach shows good engineering
-
----
-
-## Useful Links
-
-- Chrome Built-in AI Docs: https://developer.chrome.com/docs/ai/built-in
-- Prompt API Reference: https://github.com/explainers-by-googlers/prompt-api
+- Chrome Built-in AI Documentation: https://developer.chrome.com/docs/ai/built-in
+- Gemini Nano Announcement: https://developer.chrome.com/blog/on-device-ai/
 - Chrome Canary Download: https://www.google.com/chrome/canary/
-- Chrome Components: chrome://components
-- Chrome Flags: chrome://flags
-
----
-
-## For Judges
-
-If you're testing PreVibe:
-
-1. Enable the 3 flags above in Chrome Canary
-2. Download Gemini Nano model from chrome://components
-3. Refresh the PreVibe extension
-4. Status should show "On-device AI (Gemini Nano)"
-5. Analysis will run entirely locally on your machine
-
-If Chrome AI isn't available on your test machine, PreVibe will automatically use Groq fallback while continuing to check for Chrome AI availability every 30 seconds.

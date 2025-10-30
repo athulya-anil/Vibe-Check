@@ -44,7 +44,7 @@
   },
 
   "web_accessible_resources": [{
-    "resources": ["results.html", "results-simple.html", "results-script.js", "analyze.html", "app.html", "app.js", "app.css", "icons/icon48.png"],
+    "resources": ["results.html", "results-simple.html", "results-script.js", "analyze.html", "app.html", "app.js", "app.css", "transcript-parser.js", "icons/icon48.png"],
     "matches": ["<all_urls>"]
   }]
 }
