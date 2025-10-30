@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PreVibe - Standalone Analysis</title>
+  <link rel="icon" type="image/png" sizes="48x48" href="icons/icon48.png">
+  <link rel="icon" type="image/png" sizes="128x128" href="icons/icon128.png">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 3px solid #eab308;
+    }
+
+    .header h1 {
+      font-size: 42px;
+      color: #eab308;
+      margin-bottom: 8px;
+    }
+
+    .header .subtitle {
+      color: #6b7280;
+      font-size: 16px;
+    }
+
+    .input-section {
+      margin-bottom: 30px;
+    }
+
+    .input-section h2 {
+      font-size: 18px;
+      color: #374151;
+      margin-bottom: 12px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 150px;
+      padding: 16px;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      font-size: 15px;
+      font-family: inherit;
+      resize: vertical;
+      transition: border-color 0.2s;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: #eab308;
+    }
+
+    .btn {
+      background: #eab308;
+      color: white;
+      border: none;
+      padding: 14px 32px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 12px;
+      width: 100%;
+    }
+
+    .btn:hover {
+      background: #ca8a04;
+      transform: translateY(-1px);
+    }
+
+    .btn:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #6b7280;
+      font-size: 16px;
+      display: none;
+    }
+
+    .loading.active {
+      display: block;
+    }
+
+    .results {
+      margin-top: 40px;
+      display: none;
+    }
+
+    .results.active {
+      display: block;
+    }
+
+    .original-text {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 30px;
+    }
+
+    .original-text h3 {
+      font-size: 14px;
+      color: #6b7280;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .original-text .text {
+      font-size: 15px;
+      color: #374151;
+      line-height: 1.7;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .result-card {
+      background: #f9fafb;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 20px;
+      border-left: 5px solid #eab308;
+    }
+
+    .result-card h2 {
+      font-size: 20px;
+      color: #374151;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .result-card .value {
+      font-size: 28px;
+      font-weight: 700;
+      color: #1f2937;
+      margin-bottom: 8px;
+    }
+
+    .result-card .note {
+      font-size: 14px;
+      color: #6b7280;
+      line-height: 1.6;
+      margin-top: 12px;
+    }
+
+    .score {
+      display: inline-block;
+      background: #eab308;
+      color: white;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 18px;
+      margin-left: 12px;
+    }
+
+    .suggestions {
+      background: #eff6ff;
+      border: 2px solid #bfdbfe;
+      border-radius: 12px;
+      padding: 24px;
+      margin-top: 20px;
+    }
+
+    .suggestions h2 {
+      font-size: 18px;
+      color: #1e40af;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .suggestions ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .suggestions li {
+      padding: 14px;
+      background: white;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      color: #1e3a8a;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    .suggestions li:before {
+      content: "💡";
+      margin-right: 10px;
+    }
+
+    .risk-factors {
+      background: #fef3c7;
+      border: 2px solid #fde68a;
+      border-radius: 12px;
+      padding: 24px;
+      margin-top: 20px;
+    }
+
+    .risk-factors h2 {
+      font-size: 18px;
+      color: #92400e;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .risk-factors ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .risk-factors li {
+      padding: 14px;
+      background: white;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      color: #78350f;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    .risk-factors li:before {
+      content: "⚠️";
+      margin-right: 10px;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid #e5e7eb;
+      color: #9ca3af;
+      font-size: 13px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 8px 16px;
+      background: #f3f4f6;
+      border-radius: 20px;
+      font-size: 13px;
+      color: #6b7280;
+      margin-top: 8px;
+    }
+
+    .risk-low { border-left-color: #10b981; }
+    .risk-medium { border-left-color: #f59e0b; }
+    .risk-high { border-left-color: #ef4444; }
+
+    .error {
+      background: #fee2e2;
+      border: 2px solid #fecaca;
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 20px;
+      color: #991b1b;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>PreVibe Check</h1>
+      <p class="subtitle">AI-Powered Content Analysis</p>
+    </div>
+
+    <div class="input-section">
+      <h2>📝 Paste Your Content</h2>
+      <textarea id="inputText" placeholder="Paste YouTube video description, comment, or any text you want to analyze..."></textarea>
+      <button id="analyzeBtn" class="btn">Analyze Content</button>
+    </div>
+
+    <div id="loading" class="loading">
+      <p>🤖 Analyzing your content...</p>
+    </div>
+
+    <div id="error" class="error" style="display: none;"></div>
+
+    <div id="results" class="results">
+      <div class="original-text">
+        <h3>Analyzed Content</h3>
+        <div class="text" id="originalText"></div>
+      </div>
+
+      <div class="result-card">
+        <h2><span id="sentimentEmoji">😊</span> Sentiment</h2>
+        <div class="value">
+          <span id="sentimentValue"></span>
+          <span class="score" id="sentimentScore"></span>
+        </div>
+      </div>
+
+      <div class="result-card">
+        <h2><span id="clarityEmoji">✨</span> Clarity</h2>
+        <div class="value" id="clarityValue"></div>
+        <div class="note" id="clarityNote"></div>
+      </div>
+
+      <div class="result-card" id="riskCard">
+        <h2><span id="riskEmoji">✅</span> Reputation Risk</h2>
+        <div class="value" id="riskValue"></div>
+      </div>
+
+      <div id="riskFactorsSection" style="display: none;" class="risk-factors">
+        <h2>⚠️ Risk Factors</h2>
+        <ul id="riskFactorsList"></ul>
+      </div>
+
+      <div id="suggestionsSection" style="display: none;" class="suggestions">
+        <h2>💡 Suggestions</h2>
+        <ul id="suggestionsList"></ul>
+      </div>
+
+      <div class="footer">
+        <div class="badge" id="providerBadge">Analyzed with AI</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // API configuration - Add your API key here for testing
+    const GROQ_API_KEY = ''; // Add your Groq API key here
+    const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
+    const GROQ_MODEL = 'llama-3.3-70b-versatile';
+
+    // Handle analysis
+    document.getElementById('analyzeBtn').addEventListener('click', async () => {
+      const text = document.getElementById('inputText').value.trim();
+
+      if (!text) {
+        showError('Please enter some text to analyze');
+        return;
+      }
+
+      try {
+        // Show loading
+        document.getElementById('loading').classList.add('active');
+        document.getElementById('results').classList.remove('active');
+        document.getElementById('error').style.display = 'none';
+        document.getElementById('analyzeBtn').disabled = true;
+
+        // Analyze with Groq API
+        const analysis = await analyzeWithGroq(text);
+
+        // Hide loading
+        document.getElementById('loading').classList.remove('active');
+        document.getElementById('analyzeBtn').disabled = false;
+
+        displayResults(analysis, text);
+      } catch (error) {
+        document.getElementById('loading').classList.remove('active');
+        document.getElementById('analyzeBtn').disabled = false;
+        showError('Error: ' + error.message);
+      }
+    });
+
+    async function analyzeWithGroq(text) {
+      const systemPrompt = `You are an AI content analyzer for YouTube creators. Analyze the provided text and respond ONLY with a JSON object (no markdown, no code blocks) in this exact format:
+
+{
+  "sentiment": "positive/neutral/negative",
+  "sentimentScore": 0-100,
+  "clarity": "clear/moderate/unclear",
+  "clarityNotes": "brief explanation",
+  "reputationRisk": "low/medium/high",
+  "riskFactors": ["factor1", "factor2"],
+  "suggestions": ["suggestion1", "suggestion2"]
+}
+
+Be concise and actionable.`;
+
+      const response = await fetch(GROQ_API_URL, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${GROQ_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: GROQ_MODEL,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: `Analyze this YouTube content:\n\n${text}` }
+          ],
+          temperature: 0.7,
+          max_tokens: 2000,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(`API error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
+      }
+
+      const data = await response.json();
+      const aiResponse = data.choices[0]?.message?.content;
+
+      if (!aiResponse) {
+        throw new Error('No response from AI');
+      }
+
+      // Parse JSON response
+      let jsonText = aiResponse.trim();
+      jsonText = jsonText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+
+      const analysis = JSON.parse(jsonText);
+      analysis.provider = 'groq';
+      analysis.model = GROQ_MODEL;
+
+      return analysis;
+    }
+
+    function displayResults(analysis, originalText) {
+      document.getElementById('results').classList.add('active');
+
+      // Original text
+      document.getElementById('originalText').textContent = originalText;
+
+      // Sentiment
+      const sentimentEmojis = {
+        positive: '😊',
+        neutral: '😐',
+        negative: '😟'
+      };
+      document.getElementById('sentimentEmoji').textContent = sentimentEmojis[analysis.sentiment] || '🤔';
+      document.getElementById('sentimentValue').textContent =
+        analysis.sentiment.charAt(0).toUpperCase() + analysis.sentiment.slice(1);
+
+      if (analysis.sentimentScore) {
+        document.getElementById('sentimentScore').textContent = `${analysis.sentimentScore}/100`;
+      }
+
+      // Clarity
+      const clarityEmojis = {
+        clear: '✨',
+        moderate: '💫',
+        unclear: '❓'
+      };
+      document.getElementById('clarityEmoji').textContent = clarityEmojis[analysis.clarity] || '📝';
+      document.getElementById('clarityValue').textContent =
+        analysis.clarity.charAt(0).toUpperCase() + analysis.clarity.slice(1);
+
+      if (analysis.clarityNotes) {
+        document.getElementById('clarityNote').textContent = analysis.clarityNotes;
+      }
+
+      // Reputation Risk
+      const riskInfo = {
+        low: { emoji: '✅', color: '#10b981' },
+        medium: { emoji: '⚠️', color: '#f59e0b' },
+        high: { emoji: '🚨', color: '#ef4444' }
+      };
+      const risk = riskInfo[analysis.reputationRisk] || { emoji: '❓', color: '#6b7280' };
+
+      document.getElementById('riskEmoji').textContent = risk.emoji;
+      document.getElementById('riskValue').textContent =
+        analysis.reputationRisk.charAt(0).toUpperCase() + analysis.reputationRisk.slice(1);
+
+      const riskCard = document.getElementById('riskCard');
+      riskCard.className = 'result-card';
+      riskCard.classList.add(`risk-${analysis.reputationRisk}`);
+
+      // Risk Factors
+      const riskFactorsList = document.getElementById('riskFactorsList');
+      riskFactorsList.innerHTML = '';
+
+      if (analysis.riskFactors && analysis.riskFactors.length > 0) {
+        analysis.riskFactors.forEach(factor => {
+          const li = document.createElement('li');
+          li.textContent = factor;
+          riskFactorsList.appendChild(li);
+        });
+        document.getElementById('riskFactorsSection').style.display = 'block';
+      } else {
+        document.getElementById('riskFactorsSection').style.display = 'none';
+      }
+
+      // Suggestions
+      const suggestionsList = document.getElementById('suggestionsList');
+      suggestionsList.innerHTML = '';
+
+      if (analysis.suggestions && analysis.suggestions.length > 0) {
+        analysis.suggestions.forEach(suggestion => {
+          const li = document.createElement('li');
+          li.textContent = suggestion;
+          suggestionsList.appendChild(li);
+        });
+        document.getElementById('suggestionsSection').style.display = 'block';
+      } else {
+        document.getElementById('suggestionsSection').style.display = 'none';
+      }
+
+      // Provider badge
+      const providerText = analysis.provider === 'chrome'
+        ? 'Analyzed with Chrome AI (Gemini Nano)'
+        : `Analyzed with Groq AI (${analysis.model || 'Cloud'})`;
+      document.getElementById('providerBadge').textContent = providerText;
+    }
+
+    function showError(message) {
+      const errorEl = document.getElementById('error');
+      errorEl.textContent = '❌ ' + message;
+      errorEl.style.display = 'block';
+    }
+  </script>
+</body>
+</html>

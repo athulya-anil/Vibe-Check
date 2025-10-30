@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PreVibe - Content Analysis</title>
+    <link rel="icon" type="image/png" sizes="48x48" href="icons/icon48.png">
+    <link rel="icon" type="image/png" sizes="128x128" href="icons/icon128.png">
+    <link rel="stylesheet" href="app.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar with History -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="icons/icon48.png" alt="PreVibe" class="logo">
+                <h2>PreVibe</h2>
+            </div>
+
+            <button class="new-analysis-btn" id="newAnalysisBtn">
+                <span>+</span> New Analysis
+            </button>
+
+            <div class="history-section">
+                <div class="history-header">
+                    <h3>History</h3>
+                    <button class="clear-history-btn" id="clearHistoryBtn" title="Clear all history">🗑️</button>
+                </div>
+                <div id="historyList" class="history-list">
+                    <div class="empty-state">No analysis history yet</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header class="app-header">
+                <h1>Content Analysis</h1>
+            </header>
+
+            <!-- Input Form -->
+            <div id="inputSection" class="input-section">
+                <textarea 
+                    id="contentInput" 
+                    placeholder="Paste YouTube video description, social media post, or any content you want to analyze..."
+                    rows="8"
+                ></textarea>
+                <button id="analyzeBtn" class="analyze-btn">Analyze Content</button>
+            </div>
+
+            <!-- Results Display -->
+            <div id="resultsSection" class="results-section" style="display: none;">
+                <div class="results-header">
+                    <h2>Analysis Results</h2>
+                    <button id="clearResultsBtn" class="clear-btn">Clear</button>
+                </div>
+
+                <div id="resultsContent"></div>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loadingState" class="loading-state" style="display: none;">
+                <div class="spinner"></div>
+                <p>Analyzing content...</p>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

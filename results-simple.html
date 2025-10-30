@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>PreVibe Results</title>
+    <link rel="icon" type="image/png" sizes="48x48" href="icons/icon48.png">
+    <link rel="icon" type="image/png" sizes="128x128" href="icons/icon128.png">
+    <style>
+        body {
+            font-family: -apple-system, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+        }
+        h1 { color: #eab308; text-align: center; }
+        .result { margin: 20px 0; padding: 20px; background: #f9fafb; border-radius: 8px; border-left: 4px solid #eab308; }
+        .result h3 { margin: 0 0 10px 0; }
+        .value { font-size: 20px; font-weight: bold; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PreVibe Check</h1>
+        <div id="content">
+            <div class="result">
+                <p>⏳ Initializing...</p>
+            </div>
+        </div>
+    </div>
+    <script src="results-script.js"></script>
+</body>
+</html>

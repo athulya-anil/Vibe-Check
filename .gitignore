@@ -1,0 +1,19 @@
+# API Keys and Secrets
+.env
+*.key
+
+# Chrome Extension
+*.pem
+*.crx
+
+# macOS
+.DS_Store
+
+# Node modules (if you add build tools later)
+node_modules/
+
+# Logs
+*.log
+
+# Test files
+test-*.html
