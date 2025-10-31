@@ -127,7 +127,7 @@ function addPreVibeButton() {
   const actionsSection = document.querySelector('#top-level-buttons-computed, #top-level-buttons');
 
   if (!actionsSection) {
-    console.warn('⚠️ Could not find YouTube actions section');
+    // Silently return - actions section may not be loaded yet
     return;
   }
 
@@ -235,6 +235,133 @@ function extractVideoDescription() {
   }
 
   return null;
+}
+
+/**
+ * Extract all video data including title, description, thumbnail, and transcript
+ */
+async function extractAllVideoData() {
+  const data = {
+    title: null,
+    description: null,
+    thumbnail: null,
+    transcript: null,
+    channelName: null
+  };
+
+  // Extract title
+  const titleElement = document.querySelector('h1.ytd-watch-metadata yt-formatted-string, h1.title yt-formatted-string');
+  if (titleElement) {
+    data.title = titleElement.textContent.trim();
+  }
+
+  // Extract description
+  data.description = extractVideoDescription();
+
+  // Extract channel name
+  const channelElement = document.querySelector('ytd-channel-name a, #channel-name a');
+  if (channelElement) {
+    data.channelName = channelElement.textContent.trim();
+  }
+
+  // Extract thumbnail - try multiple sources
+  const thumbnailSelectors = [
+    'link[rel="image_src"]',
+    'meta[property="og:image"]',
+    'video'
+  ];
+
+  for (const selector of thumbnailSelectors) {
+    const element = document.querySelector(selector);
+    if (element) {
+      if (selector === 'video') {
+        // Try to get video poster or current frame
+        const video = element;
+        if (video.poster) {
+          data.thumbnail = video.poster;
+          break;
+        }
+      } else if (element.content) {
+        data.thumbnail = element.content;
+        break;
+      } else if (element.href) {
+        data.thumbnail = element.href;
+        break;
+      }
+    }
+  }
+
+  // Try to extract transcript from captions
+  data.transcript = await extractTranscript();
+
+  return data;
+}
+
+/**
+ * Extract transcript from YouTube captions
+ */
+async function extractTranscript() {
+  try {
+    console.log('🔍 Starting transcript extraction...');
+
+    // Look for the transcript button - updated selectors for new YouTube UI
+    const transcriptButtons = document.querySelectorAll('button[aria-label*="transcript" i], button[aria-label*="Show transcript" i], ytd-button-renderer:has([aria-label*="transcript" i])');
+
+    console.log('Found transcript buttons:', transcriptButtons.length);
+
+    if (transcriptButtons.length === 0) {
+      console.log('❌ No transcript button found - video may not have captions');
+      return null;
+    }
+
+    // Click to open transcript panel if not already open
+    const transcriptButton = transcriptButtons[0];
+    const isExpanded = transcriptButton.getAttribute('aria-expanded') === 'true';
+
+    console.log('Transcript button expanded:', isExpanded);
+
+    if (!isExpanded) {
+      console.log('📂 Opening transcript panel...');
+      transcriptButton.click();
+      // Wait for transcript panel to load
+      await new Promise(resolve => setTimeout(resolve, 1500));
+    }
+
+    // Wait a bit more for content to render
+    await new Promise(resolve => setTimeout(resolve, 800));
+
+    // Extract transcript text - updated selectors for new YouTube UI
+    const transcriptSelectors = [
+      'ytd-transcript-segment-renderer .segment-text',
+      'ytd-transcript-segment-list-renderer yt-formatted-string',
+      '[class*="transcript"] [class*="segment-text"]',
+      'ytd-engagement-panel-section-list-renderer[target-id="engagement-panel-searchable-transcript"] ytd-transcript-segment-renderer .segment-text'
+    ];
+
+    for (const selector of transcriptSelectors) {
+      const segments = document.querySelectorAll(selector);
+      console.log(`Trying selector "${selector}": found ${segments.length} segments`);
+
+      if (segments.length > 0) {
+        const transcript = Array.from(segments)
+          .map(textEl => textEl.textContent.trim())
+          .filter(text => text.length > 0)
+          .join(' ');
+
+        if (transcript.length > 0) {
+          console.log('✅ Transcript extracted:', transcript.length, 'characters');
+          console.log('Preview:', transcript.substring(0, 100) + '...');
+          return transcript;
+        }
+      }
+    }
+
+    console.log('⚠️ Transcript panel opened but no content found');
+    return null;
+  } catch (error) {
+    console.error('❌ Error extracting transcript:', error);
+    return null;
+  }
 }
 
 /**
@@ -419,6 +546,27 @@ function removePreVibeElements() {
     resultsOverlay = null;
   }
 }
+
+/**
+ * Listen for messages from background script
+ */
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === 'GET_VIDEO_DATA') {
+    (async () => {
+      try {
+        const videoData = await extractAllVideoData();
+        if (videoData) {
+          sendResponse({ success: true, data: videoData });
+        } else {
+          sendResponse({ success: false, error: 'Could not extract video data' });
+        }
+      } catch (error) {
+        sendResponse({ success: false, error: error.message });
+      }
+    })();
+    return true; // Keep the message channel open for async response
+  }
+});
 
 /**
  * Inject CSS styles into the page

@@ -547,7 +547,8 @@ async function toggleTheme() {
  */
 async function loadTheme() {
   const result = await chrome.storage.local.get(['darkTheme']);
-  const isDark = result.darkTheme || false;
+  // Default to light mode (false)
+  const isDark = result.darkTheme === true;
 
   if (isDark) {
     document.body.classList.add('dark-theme');

@@ -18,11 +18,11 @@ header {
   align-items: center;
   margin-bottom: 12px;
   padding-bottom: 12px;
-  border-bottom: 2px solid #eab308;
+  border-bottom: 2px solid #f97316;
 }
 
 h1 {
-  color: #eab308;
+  color: #f97316;
   font-size: 20px;
   margin: 0;
 }
@@ -145,8 +145,8 @@ h1 {
 
 .settings-form input[type="password"]:focus {
   outline: none;
-  border-color: #eab308;
-  box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.1);
+  border-color: #f97316;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
 }
 
 .settings-help {
@@ -208,8 +208,8 @@ h1 {
 
 .api-key-input:focus {
   outline: none;
-  border-color: #eab308;
-  box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.1);
+  border-color: #f97316;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
 }
 
 /* Hint */
@@ -292,8 +292,8 @@ textarea {
 
 textarea:focus {
   outline: none;
-  border-color: #eab308;
-  box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.1);
+  border-color: #f97316;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
 }
 
 /* Button Group */
@@ -450,7 +450,7 @@ body.dark-theme header {
 }
 
 body.dark-theme h1 {
-  color: #eab308;
+  color: #f97316;
 }
 
 body.dark-theme .provider-info {
@@ -487,7 +487,7 @@ body.dark-theme .results {
 }
 
 body.dark-theme .results h2 {
-  color: #eab308;
+  color: #f97316;
   border-bottom-color: #4b5563;
 }
 
@@ -561,7 +561,7 @@ body.dark-theme .settings-help small {
 }
 
 body.dark-theme .settings-help a {
-  color: #fbbf24;
+  color: #f97316;
 }
 
 /* Multimodal Upload Section */
@@ -644,7 +644,7 @@ body.dark-theme .file-chip {
 /* Settings Panel */
 .settings-panel {
   background: #fff;
-  border: 2px solid #eab308;
+  border: 2px solid #f97316;
   border-radius: 8px;
   padding: 16px;
   margin-bottom: 16px;
@@ -652,7 +652,7 @@ body.dark-theme .file-chip {
 
 .settings-panel h3 {
   margin: 0 0 12px 0;
-  color: #eab308;
+  color: #f97316;
   font-size: 16px;
 }
 
@@ -677,8 +677,8 @@ body.dark-theme .file-chip {
 .settings-form .btn-primary {
   width: 100%;
   padding: 10px;
-  background: #eab308;
-  color: #000;
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  color: white;
   border: none;
   border-radius: 6px;
   font-weight: 600;
@@ -687,7 +687,7 @@ body.dark-theme .file-chip {
 }
 
 .settings-form .btn-primary:hover {
-  background: #ca8a04;
+  background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
 }
 
 .settings-help {
@@ -701,7 +701,7 @@ body.dark-theme .file-chip {
 }
 
 .settings-help a {
-  color: #eab308;
+  color: #f97316;
   text-decoration: none;
 }
 
@@ -711,7 +711,7 @@ body.dark-theme .file-chip {
 
 body.dark-theme .settings-panel {
   background: #1f2937;
-  border-color: #fbbf24;
+  border-color: #f97316;
 }
 
 body.dark-theme .settings-form label {
@@ -729,5 +729,5 @@ body.dark-theme .settings-help small {
 }
 
 body.dark-theme .settings-help a {
-  color: #fbbf24;
+  color: #f97316;
 }

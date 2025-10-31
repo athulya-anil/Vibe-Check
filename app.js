@@ -73,6 +73,11 @@ function setupEventListeners() {
 
   // YouTube tab
   document.getElementById('fetchYoutubeBtn').addEventListener('click', fetchYoutubeAndAnalyze);
+  document.getElementById('youtubeUrl').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      fetchYoutubeAndAnalyze();
+    }
+  });
 
   // Results
   document.getElementById('clearResultsBtn').addEventListener('click', clearResults);
@@ -360,8 +365,8 @@ async function analyzeManualContent() {
       await saveHistory();
       renderHistory();
 
-      // Display results with hasImage flag
-      displayResults(response.analysis, text, hasImage);
+      // Display results with hasImage flag (no videoData for manual entry)
+      displayResults(response.analysis, text, hasImage, null);
     } else {
       alert('Analysis failed: ' + response.error);
     }
@@ -382,15 +387,115 @@ async function fetchYoutubeAndAnalyze() {
     return;
   }
 
-  // Simple YouTube transcript fetch using YouTube oEmbed API
-  // Note: This is a simplified version. Real transcript fetching requires backend API
-  alert('YouTube transcript fetching requires a backend API or npm package.\\n\\nFor now, please:\\n\\n1. Use a Chrome extension like "YouTube Transcript" to copy the transcript\\n2. Paste it in the Manual Entry tab\\n3. Click Analyze\\n\\nFull YouTube API integration coming soon!');
+  // Extract video ID from URL
+  const videoId = extractYouTubeVideoId(url);
+  if (!videoId) {
+    alert('Invalid YouTube URL. Please enter a valid YouTube video URL.');
+    return;
+  }
+
+  if (!currentAIStatus || !currentAIStatus.available) {
+    alert('AI is not available. Please configure Gemini API key in settings.');
+    return;
+  }
+
+  try {
+    showLoading('Fetching YouTube content...');
+
+    // Send message to background to fetch YouTube data
+    const response = await chrome.runtime.sendMessage({
+      type: 'FETCH_YOUTUBE_DATA',
+      videoId: videoId
+    });
+
+    if (!response.success) {
+      hideLoading();
+      alert('Failed to fetch YouTube data: ' + response.error);
+      return;
+    }
+
+    // Update loading message
+    showLoading('Analyzing content...');
+
+    // Analyze the fetched content (with thumbnail if available)
+    let analysisResponse;
+    if (response.thumbnail) {
+      analysisResponse = await chrome.runtime.sendMessage({
+        type: 'ANALYZE_CONTENT_MULTIMODAL',
+        content: {
+          text: response.content,
+          images: [{
+            data: response.thumbnail,
+            mimeType: 'image/jpeg',
+            name: 'thumbnail.jpg'
+          }],
+          audios: []
+        }
+      });
+    } else {
+      analysisResponse = await chrome.runtime.sendMessage({
+        type: 'ANALYZE_CONTENT',
+        text: response.content
+      });
+    }
+
+    hideLoading();
+
+    if (analysisResponse.success) {
+      currentAnalysis = {
+        text: response.content,
+        analysis: analysisResponse.analysis,
+        timestamp: Date.now(),
+        source: 'youtube',
+        videoId: videoId,
+        hasImage: !!response.thumbnail,
+        hasTranscript: response.hasTranscript,
+        videoData: response.videoData
+      };
+
+      // Add to history
+      analysisHistory.unshift(currentAnalysis);
+      if (analysisHistory.length > 20) {
+        analysisHistory = analysisHistory.slice(0, 20);
+      }
+      await saveHistory();
+      renderHistory();
+
+      // Display results with video data info
+      displayResults(analysisResponse.analysis, response.content, !!response.thumbnail, response.videoData);
+    } else {
+      alert('Analysis failed: ' + analysisResponse.error);
+    }
+  } catch (error) {
+    hideLoading();
+    alert('Error: ' + error.message);
+  }
+}
+
+/**
+ * Extract YouTube video ID from URL
+ */
+function extractYouTubeVideoId(url) {
+  // Handle various YouTube URL formats
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
+    /^([a-zA-Z0-9_-]{11})$/ // Direct video ID
+  ];
+
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match && match[1]) {
+      return match[1];
+    }
+  }
+
+  return null;
 }
 
 /**
  * Display analysis results
  */
-function displayResults(analysis, text, hasImage = false) {
+function displayResults(analysis, text, hasImage = false, videoData = null) {
   const resultsSection = document.getElementById('resultsSection');
   const resultsContent = document.getElementById('resultsContent');
 
@@ -406,17 +511,51 @@ function displayResults(analysis, text, hasImage = false) {
     'high': '#ef4444'
   };
 
+  // Build data sources badge if videoData is provided
+  let dataSourcesBadge = '';
+  if (videoData) {
+    const sources = [];
+    if (videoData.title) sources.push('📌 Title');
+    if (videoData.description) sources.push('📝 Description');
+    if (videoData.transcript) sources.push('📜 Transcript');
+    if (videoData.thumbnail) sources.push('🖼️ Thumbnail');
+    if (videoData.channelName) sources.push('👤 Channel');
+
+    // Check if we got full data or limited data
+    const hasFullData = videoData.description || videoData.transcript;
+    const hintMessage = hasFullData ? '' : `
+      <p class="tip-box">
+        💡 <strong>Tip:</strong> Open this video in a YouTube tab first, then analyze it to get Description and Transcript for deeper analysis!
+      </p>
+    `;
+
+    if (sources.length > 0) {
+      dataSourcesBadge = `
+        <div class="result-card result-card-success">
+          <h3>📊 Data Extracted</h3>
+          <p style="font-weight: 600; margin-bottom: 0.5rem;">Successfully analyzed the following:</p>
+          <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem;">
+            ${sources.map(s => `<span class="badge">${s}</span>`).join('')}
+          </div>
+          ${hintMessage}
+        </div>
+      `;
+    }
+  }
+
   resultsContent.innerHTML = `
+    ${dataSourcesBadge}
+
     ${hasImage && analysis.imageAnalysis ? `
-      <div class="result-card" style="background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%); border-color: #f97316;">
+      <div class="result-card result-card-warning">
         <h3>🎨 Image Analysis</h3>
-        <p style="color: #c2410c; font-weight: 600; margin-bottom: 0.5rem;">Visual Content Assessment:</p>
-        <p style="color: #9a3412;">${analysis.imageAnalysis}</p>
+        <p style="font-weight: 600; margin-bottom: 0.5rem;">Visual Content Assessment:</p>
+        <p>${analysis.imageAnalysis}</p>
       </div>
     ` : hasImage ? `
-      <div class="result-card" style="background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%); border-color: #f97316;">
+      <div class="result-card result-card-warning">
         <h3>🎨 Multimodal Analysis</h3>
-        <p style="color: #c2410c; font-weight: 600;">✅ Image analyzed alongside text for comprehensive insights</p>
+        <p style="font-weight: 600;">✅ Image analyzed alongside text for comprehensive insights</p>
       </div>
     ` : ''}
 
@@ -573,14 +712,21 @@ function loadAnalysisFromHistory(index) {
 
   currentAnalysis = item;
 
-  // Switch to manual tab first
-  switchTab('manual');
-
-  // Populate the text input
-  document.getElementById('contentInput').value = item.text;
+  // Switch to appropriate tab based on source
+  if (item.source === 'youtube') {
+    switchTab('youtube');
+    // Populate YouTube URL if we have the video ID
+    if (item.videoId) {
+      document.getElementById('youtubeUrl').value = `https://www.youtube.com/watch?v=${item.videoId}`;
+    }
+  } else {
+    switchTab('manual');
+    // Populate the text input
+    document.getElementById('contentInput').value = item.text;
+  }
 
   // Display the saved results
-  displayResults(item.analysis, item.text, item.hasImage || false);
+  displayResults(item.analysis, item.text, item.hasImage || false, item.videoData || null);
 
   // Update history rendering to show active state
   renderHistory();
@@ -649,7 +795,8 @@ async function toggleTheme() {
 async function loadTheme() {
   try {
     const result = await chrome.storage.local.get(['darkTheme']);
-    const isDark = result.darkTheme || false;
+    // Default to light mode (false)
+    const isDark = result.darkTheme === true;
 
     if (isDark) {
       document.body.classList.add('dark-theme');

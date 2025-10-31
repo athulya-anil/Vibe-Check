@@ -113,7 +113,7 @@ body {
 .main-content {
     flex: 1;
     padding: 2rem;
-    max-width: 1200px;
+    max-width: 100%;
     margin: 0 auto;
     width: 100%;
 }
@@ -139,6 +139,11 @@ body {
 }
 
 /* Manual Upload Tab */
+.upload-section {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
 .upload-section h2 {
     font-size: 1.8rem;
     margin-bottom: 0.5rem;
@@ -313,6 +318,11 @@ textarea:focus {
 }
 
 /* YouTube Tab */
+.youtube-section {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
 .youtube-section h2 {
     font-size: 1.8rem;
     margin-bottom: 0.5rem;
@@ -325,13 +335,20 @@ textarea:focus {
     padding: 2rem;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     border: 2px solid #e2e8f0;
+    transition: all 0.2s;
+}
+
+.youtube-input-card:hover {
+    border-color: #cbd5e0;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
 .youtube-input-card label {
     display: block;
     font-weight: 600;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
     color: #2d3748;
+    font-size: 1rem;
 }
 
 .youtube-input {
@@ -349,26 +366,28 @@ textarea:focus {
 }
 
 .input-hint {
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     color: #64748b;
-    margin: 0.5rem 0 1rem 0;
+    margin: 0.5rem 0 0.75rem 0;
 }
 
 .fetch-btn {
-    background: #dc2626;
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
     color: white;
     border: none;
-    padding: 0.75rem 2rem;
+    padding: 1rem 2rem;
     border-radius: 8px;
     font-weight: 600;
+    font-size: 1.05rem;
     cursor: pointer;
     transition: all 0.2s;
+    width: 100%;
+    margin-top: 0;
 }
 
 .fetch-btn:hover {
-    background: #b91c1c;
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(220, 38, 38, 0.3);
+    box-shadow: 0 6px 20px rgba(249, 115, 22, 0.4);
 }
 
 .fetched-data {
@@ -398,6 +417,11 @@ textarea:focus {
 }
 
 /* Guide Tab */
+.guide-section {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
 .guide-section h2 {
     font-size: 1.8rem;
     margin-bottom: 2rem;
@@ -410,7 +434,8 @@ textarea:focus {
     padding: 2rem;
     margin-bottom: 1.5rem;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    border-left: 4px solid #1f2937;
+    border: 2px solid #e2e8f0;
+    border-left: 4px solid #f97316;
 }
 
 .guide-card h3 {
@@ -472,11 +497,12 @@ textarea:focus {
 
 /* Results Section */
 .results-section {
-    background: white;
-    border-radius: 12px;
-    padding: 2rem;
+    background: transparent;
+    padding: 0;
     margin-top: 2rem;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .results-header {
@@ -484,13 +510,17 @@ textarea:focus {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
-    border-bottom: 2px solid #e2e8f0;
+    padding: 1.5rem 2rem;
+    background: white;
+    border-radius: 12px;
+    border: 2px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 .results-header h2 {
     font-size: 1.5rem;
     color: #1a202c;
+    font-weight: 700;
 }
 
 .clear-btn {
@@ -937,6 +967,52 @@ textarea:focus {
     line-height: 1.6;
 }
 
+/* Special result cards */
+.result-card-success {
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%) !important;
+    border-color: #10b981 !important;
+}
+
+.result-card-success h3 {
+    color: #065f46;
+}
+
+.result-card-success p {
+    color: #065f46;
+}
+
+.result-card-success .badge {
+    background: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    color: #059669;
+    font-weight: 500;
+}
+
+.result-card-success .tip-box {
+    color: #92400e;
+    font-size: 0.85rem;
+    margin-top: 0.75rem;
+    padding: 0.5rem;
+    background: #fef3c7;
+    border-radius: 6px;
+}
+
+.result-card-warning {
+    background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%) !important;
+    border-color: #f97316 !important;
+}
+
+.result-card-warning h3 {
+    color: #c2410c;
+}
+
+.result-card-warning p {
+    color: #92400e;
+    font-weight: 500;
+}
+
 .previbe-check-title {
     font-weight: 700;
     font-size: 1.1rem;
@@ -1219,11 +1295,11 @@ body.dark-theme .input-hint {
 }
 
 body.dark-theme .fetch-btn {
-    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
 }
 
 body.dark-theme .fetch-btn:hover {
-    background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+    background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
 }
 
 /* Guide section dark theme */
@@ -1233,7 +1309,8 @@ body.dark-theme .guide-section h2 {
 
 body.dark-theme .guide-card {
     background: #111827;
-    border-color: #374151;
+    border: 2px solid #374151;
+    border-left: 4px solid #f97316;
 }
 
 body.dark-theme .guide-card h3 {
@@ -1261,6 +1338,11 @@ body.dark-theme .analysis-item {
 /* Results section dark theme */
 body.dark-theme .results-section {
     background: transparent;
+}
+
+body.dark-theme .results-header {
+    background: #111827;
+    border-color: #374151;
 }
 
 body.dark-theme .results-header h2 {
@@ -1300,6 +1382,45 @@ body.dark-theme .result-card ul {
 
 body.dark-theme .previbe-check-title {
     color: #f97316;
+}
+
+/* Dark theme special cards */
+body.dark-theme .result-card-success {
+    background: linear-gradient(135deg, #064e3b 0%, #065f46 100%) !important;
+    border-color: #10b981 !important;
+}
+
+body.dark-theme .result-card-success h3 {
+    color: #d1fae5;
+}
+
+body.dark-theme .result-card-success p {
+    color: #a7f3d0;
+    font-weight: 500;
+}
+
+body.dark-theme .result-card-success .badge {
+    background: #1f2937;
+    color: #6ee7b7;
+}
+
+body.dark-theme .result-card-success .tip-box {
+    background: #78350f;
+    color: #fef3c7;
+}
+
+body.dark-theme .result-card-warning {
+    background: linear-gradient(135deg, #78350f 0%, #92400e 100%) !important;
+    border-color: #f97316 !important;
+}
+
+body.dark-theme .result-card-warning h3 {
+    color: #fed7aa;
+}
+
+body.dark-theme .result-card-warning p {
+    color: #fef3c7;
+    font-weight: 500;
 }
 
 body.dark-theme .result-meta {
