@@ -1,5 +1,5 @@
 /**
- * PreVibe Full-Page App
+ * VibeCheck Full-Page App
  * Complete implementation with tabs, history, and YouTube support
  */
 
@@ -12,7 +12,7 @@ let uploadedImage = null;
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', async () => {
-  console.log('🚀 PreVibe Full-Page App initializing...');
+  console.log('🚀 VibeCheck Full-Page App initializing...');
 
   try {
     // Load history
@@ -63,7 +63,12 @@ function setupEventListeners() {
   // Settings
   document.getElementById('settingsBtn').addEventListener('click', openSettings);
   document.getElementById('closeSettingsBtn').addEventListener('click', closeSettings);
-  document.getElementById('settingsOverlay')?.addEventListener('click', closeSettings);
+  document.getElementById('settingsOverlay')?.addEventListener('click', (e) => {
+    // Only close if clicking directly on the overlay, not on child elements
+    if (e.target === e.currentTarget) {
+      closeSettings();
+    }
+  });
   document.getElementById('saveApiKeyBtn').addEventListener('click', saveApiKey);
 
   // Manual tab
@@ -594,7 +599,7 @@ function displayResults(analysis, text, hasImage = false, videoData = null) {
     ` : ''}
 
     <div class="result-meta">
-      <div class="previbe-check-title">⚡ PreVibe Check</div>
+      <div class="vibecheck-title">⚡ VibeCheck</div>
       <small>Analyzed with: ${analysis.provider === 'chrome' ? '🟢 Chrome AI (On-device)' : '🟡 Google Gemini (Cloud)'}</small>
     </div>
   `;

@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "PreVibe - AI Vibe Check",
+  "name": "VibeCheck - AI Content Analysis",
   "version": "1.0.0",
   "description": "Analyze tone, sentiment, and clarity of YouTube descriptions or transcripts using Chrome's Built-in AI APIs.",
   

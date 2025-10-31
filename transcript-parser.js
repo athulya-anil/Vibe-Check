@@ -1,5 +1,5 @@
 /**
- * Transcript Parser for PreVibe
+ * Transcript Parser for VibeCheck
  * Supports: .txt, .srt, .vtt formats
  */
 

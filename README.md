@@ -1,12 +1,12 @@
-# PreVibe Check
+# VibeCheck Check
 
-**PreVibe** helps YouTube creators analyze their content for potential reputation risks BEFORE publishing. Get instant feedback on sentiment, clarity, reputation risk, and misleading thumbnails using AI.
+**VibeCheck** helps YouTube creators analyze their content for potential reputation risks BEFORE publishing. Get instant feedback on sentiment, clarity, reputation risk, and misleading thumbnails using AI.
 
 Built for the **Chrome Built-in AI Challenge 2025** - leveraging Chrome's on-device Gemini Nano with cloud fallback.
 
 ## What Does It Do?
 
-PreVibe analyzes YouTube content (description/transcript + thumbnails) and provides:
+VibeCheck analyzes YouTube content (description/transcript + thumbnails) and provides:
 
 - **😊 Sentiment Analysis** - Positive, neutral, or negative tone
 - **✨ Clarity Score** - How clear and understandable your content is
@@ -22,7 +22,7 @@ PreVibe analyzes YouTube content (description/transcript + thumbnails) and provi
 2. Open Chrome and go to `chrome://extensions/`
 3. Enable "Developer mode" (top right toggle)
 4. Click "Load unpacked"
-5. Select the `PreVibe` folder
+5. Select the `VibeCheck` folder
 6. Pin the extension to your toolbar
 
 ### 2. Get a Google Gemini API Key (Free)
@@ -34,7 +34,7 @@ PreVibe analyzes YouTube content (description/transcript + thumbnails) and provi
 
 ### 3. Configure the Extension
 
-1. Click the PreVibe extension icon
+1. Click the VibeCheck extension icon
 2. Click the ⚙️ settings button
 3. Paste your Gemini API key
 4. Click "Save API Key"
@@ -42,7 +42,7 @@ PreVibe analyzes YouTube content (description/transcript + thumbnails) and provi
 ### 4. Analyze Your Content
 
 **Option 1: Popup (Quick Analysis)**
-1. Click the PreVibe icon
+1. Click the VibeCheck icon
 2. Paste your YouTube description or transcript
 3. Optionally upload a thumbnail image
 4. Click "Analyze Content"
@@ -56,7 +56,7 @@ PreVibe analyzes YouTube content (description/transcript + thumbnails) and provi
 
 ## Hybrid AI System
 
-PreVibe uses a **hybrid approach** for maximum reliability:
+VibeCheck uses a **hybrid approach** for maximum reliability:
 
 1. **Chrome's Built-in AI (Gemini Nano)** - Privacy-first, on-device processing
    - No data leaves your computer
@@ -82,7 +82,7 @@ The extension automatically uses the best available option!
 ## Project Structure
 
 ```
-PreVibe/
+VibeCheck/
 ├── manifest.json           # Extension configuration
 ├── background.js           # Service worker
 ├── ai-service.js           # Hybrid AI logic
@@ -143,7 +143,7 @@ PreVibe/
 > You claim you're the best but you can't compete,
 > When I drop this track, you'll accept defeat"
 
-**PreVibe Analysis:**
+**VibeCheck Analysis:**
 - **Sentiment:** Negative (confrontational, aggressive)
 - **Clarity:** High (clear message and intent)
 - **Reputation Risk:** Moderate-High

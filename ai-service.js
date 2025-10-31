@@ -1,5 +1,5 @@
 /**
- * Hybrid AI Service for PreVibe
+ * Hybrid AI Service for VibeCheck
  * Automatically detects Chrome Prompt API availability and falls back to Google Gemini API
  */
 

@@ -342,8 +342,8 @@ async function displayResults(analysis) {
   // Store analysis data for opening in new tab (use chrome.storage instead of localStorage)
   const inputText = lastInputText;
   await chrome.storage.local.set({
-    'previbe_analysis': JSON.stringify(analysis),
-    'previbe_original_text': inputText
+    'vibecheck_analysis': JSON.stringify(analysis),
+    'vibecheck_original_text': inputText
   });
 
   // Sentiment

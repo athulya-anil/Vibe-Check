@@ -1,8 +1,8 @@
-// PreVibe YouTube Integration
-console.log("PreVibe content script active on YouTube page.");
+// VibeCheck YouTube Integration
+console.log("VibeCheck content script active on YouTube page.");
 
 // State
-let preVibeButton = null;
+let vibeCheckButton = null;
 let resultsOverlay = null;
 let currentVideoId = null;
 let isAnalyzing = false;
@@ -18,7 +18,7 @@ if (document.readyState === 'loading') {
  * Initialize the extension on YouTube pages
  */
 function init() {
-  console.log('🚀 PreVibe initializing on YouTube...');
+  console.log('🚀 VibeCheck initializing on YouTube...');
 
   // Wait for YouTube to load
   waitForYouTubeLoad().then(() => {
@@ -74,16 +74,16 @@ function checkAndSetupVideoPage() {
     currentVideoId = videoId;
 
     // Remove old button and overlay
-    removePreVibeElements();
+    removeVibeCheckElements();
 
     // Wait for video info to load, then add button
     waitForElement('#description').then(() => {
-      addPreVibeButton();
+      addVibeCheckButton();
     });
   } else if (!videoId && currentVideoId) {
     // Left video page
     currentVideoId = null;
-    removePreVibeElements();
+    removeVibeCheckElements();
   }
 }
 
@@ -118,10 +118,10 @@ function waitForElement(selector, timeout = 10000) {
 }
 
 /**
- * Add PreVibe button to YouTube UI
+ * Add VibeCheck button to YouTube UI
  */
-function addPreVibeButton() {
-  if (preVibeButton) return;
+function addVibeCheckButton() {
+  if (vibeCheckButton) return;
 
   // Find the actions section (like, dislike, share buttons)
   const actionsSection = document.querySelector('#top-level-buttons-computed, #top-level-buttons');
@@ -131,15 +131,15 @@ function addPreVibeButton() {
     return;
   }
 
-  // Create PreVibe button container
+  // Create VibeCheck button container
   const buttonContainer = document.createElement('div');
-  buttonContainer.id = 'previbe-button-container';
-  buttonContainer.className = 'previbe-button-container';
+  buttonContainer.id = 'vibecheck-button-container';
+  buttonContainer.className = 'vibecheck-button-container';
 
   // Create button
   const button = document.createElement('button');
-  button.id = 'previbe-analyze-btn';
-  button.className = 'previbe-button';
+  button.id = 'vibecheck-analyze-btn';
+  button.className = 'vibecheck-button';
   button.innerHTML = `
     <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="margin-right: 6px;">
       <path d="M8 0a8 8 0 100 16A8 8 0 008 0zm0 14.5a6.5 6.5 0 110-13 6.5 6.5 0 010 13z"/>
@@ -147,7 +147,7 @@ function addPreVibeButton() {
       <circle cx="11" cy="6" r="1"/>
       <path d="M4.5 10c.5 1.5 2 2.5 3.5 2.5s3-.5 3.5-2H4.5z"/>
     </svg>
-    <span>PreVibe Check</span>
+    <span>VibeCheck Check</span>
   `;
 
   button.addEventListener('click', handleAnalyzeClick);
@@ -155,8 +155,8 @@ function addPreVibeButton() {
   buttonContainer.appendChild(button);
   actionsSection.appendChild(buttonContainer);
 
-  preVibeButton = button;
-  console.log('✅ PreVibe button added');
+  vibeCheckButton = button;
+  console.log('✅ VibeCheck button added');
 }
 
 /**
@@ -368,29 +368,29 @@ async function extractTranscript() {
  * Update button visual state
  */
 function updateButtonState(state) {
-  if (!preVibeButton) return;
+  if (!vibeCheckButton) return;
 
   switch (state) {
     case 'analyzing':
-      preVibeButton.innerHTML = `
-        <span class="previbe-spinner"></span>
+      vibeCheckButton.innerHTML = `
+        <span class="vibecheck-spinner"></span>
         <span>Analyzing...</span>
       `;
-      preVibeButton.disabled = true;
+      vibeCheckButton.disabled = true;
       break;
 
     case 'default':
     default:
-      preVibeButton.innerHTML = `
+      vibeCheckButton.innerHTML = `
         <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="margin-right: 6px;">
           <path d="M8 0a8 8 0 100 16A8 8 0 008 0zm0 14.5a6.5 6.5 0 110-13 6.5 6.5 0 010 13z"/>
           <circle cx="5" cy="6" r="1"/>
           <circle cx="11" cy="6" r="1"/>
           <path d="M4.5 10c.5 1.5 2 2.5 3.5 2.5s3-.5 3.5-2H4.5z"/>
         </svg>
-        <span>PreVibe Check</span>
+        <span>VibeCheck Check</span>
       `;
-      preVibeButton.disabled = false;
+      vibeCheckButton.disabled = false;
       break;
   }
 }
@@ -406,8 +406,8 @@ function showResults(analysis) {
 
   // Create overlay
   const overlay = document.createElement('div');
-  overlay.id = 'previbe-overlay';
-  overlay.className = 'previbe-overlay';
+  overlay.id = 'vibecheck-overlay';
+  overlay.className = 'vibecheck-overlay';
 
   // Sentiment emoji
   const sentimentEmoji = {
@@ -434,7 +434,7 @@ function showResults(analysis) {
   let suggestionsHtml = '';
   if (analysis.suggestions && analysis.suggestions.length > 0) {
     suggestionsHtml = `
-      <div class="previbe-suggestions">
+      <div class="vibecheck-suggestions">
         <strong>💡 Suggestions:</strong>
         <ul>
           ${analysis.suggestions.map(s => `<li>${s}</li>`).join('')}
@@ -447,7 +447,7 @@ function showResults(analysis) {
   let riskFactorsHtml = '';
   if (analysis.riskFactors && analysis.riskFactors.length > 0) {
     riskFactorsHtml = `
-      <div class="previbe-risk-factors">
+      <div class="vibecheck-risk-factors">
         <strong>⚠️ Risk Factors:</strong>
         <ul>
           ${analysis.riskFactors.map(r => `<li>${r}</li>`).join('')}
@@ -457,34 +457,34 @@ function showResults(analysis) {
   }
 
   overlay.innerHTML = `
-    <div class="previbe-overlay-content">
-      <div class="previbe-overlay-header">
-        <h2>PreVibe Analysis Results</h2>
-        <button class="previbe-close-btn">×</button>
+    <div class="vibecheck-overlay-content">
+      <div class="vibecheck-overlay-header">
+        <h2>VibeCheck Analysis Results</h2>
+        <button class="vibecheck-close-btn">×</button>
       </div>
 
-      <div class="previbe-overlay-body">
-        <div class="previbe-result-item">
+      <div class="vibecheck-overlay-body">
+        <div class="vibecheck-result-item">
           <strong>${sentimentEmoji} Sentiment:</strong>
-          <span class="previbe-capitalize">${analysis.sentiment}</span>
-          ${analysis.sentimentScore ? `<span class="previbe-score">(${analysis.sentimentScore}/100)</span>` : ''}
+          <span class="vibecheck-capitalize">${analysis.sentiment}</span>
+          ${analysis.sentimentScore ? `<span class="vibecheck-score">(${analysis.sentimentScore}/100)</span>` : ''}
         </div>
 
-        <div class="previbe-result-item">
+        <div class="vibecheck-result-item">
           <strong>${clarityEmoji} Clarity:</strong>
-          <span class="previbe-capitalize">${analysis.clarity}</span>
-          ${analysis.clarityNotes ? `<div class="previbe-note">${analysis.clarityNotes}</div>` : ''}
+          <span class="vibecheck-capitalize">${analysis.clarity}</span>
+          ${analysis.clarityNotes ? `<div class="vibecheck-note">${analysis.clarityNotes}</div>` : ''}
         </div>
 
-        <div class="previbe-result-item" style="border-left-color: ${riskInfo.color}">
+        <div class="vibecheck-result-item" style="border-left-color: ${riskInfo.color}">
           <strong>${riskInfo.emoji} Reputation Risk:</strong>
-          <span class="previbe-capitalize" style="color: ${riskInfo.color}">${analysis.reputationRisk}</span>
+          <span class="vibecheck-capitalize" style="color: ${riskInfo.color}">${analysis.reputationRisk}</span>
         </div>
 
         ${riskFactorsHtml}
         ${suggestionsHtml}
 
-        <div class="previbe-provider-badge">
+        <div class="vibecheck-provider-badge">
           Analyzed with ${analysis.provider === 'chrome' ? 'Chrome AI (Gemini Nano)' : 'Google Gemini AI'}
         </div>
       </div>
@@ -496,7 +496,7 @@ function showResults(analysis) {
   resultsOverlay = overlay;
 
   // Close button
-  overlay.querySelector('.previbe-close-btn').addEventListener('click', () => {
+  overlay.querySelector('.vibecheck-close-btn').addEventListener('click', () => {
     overlay.remove();
     resultsOverlay = null;
   });
@@ -518,8 +518,8 @@ function showResults(analysis) {
 function showError(message) {
   // Create temporary error overlay
   const errorOverlay = document.createElement('div');
-  errorOverlay.id = 'previbe-error';
-  errorOverlay.className = 'previbe-error-toast';
+  errorOverlay.id = 'vibecheck-error';
+  errorOverlay.className = 'vibecheck-error-toast';
   errorOverlay.textContent = '❌ ' + message;
 
   document.body.appendChild(errorOverlay);
@@ -529,16 +529,16 @@ function showError(message) {
     errorOverlay.remove();
   }, 5000);
 
-  console.error('❌ PreVibe error:', message);
+  console.error('❌ VibeCheck error:', message);
 }
 
 /**
- * Remove PreVibe elements from page
+ * Remove VibeCheck elements from page
  */
-function removePreVibeElements() {
-  if (preVibeButton) {
-    preVibeButton.closest('.previbe-button-container')?.remove();
-    preVibeButton = null;
+function removeVibeCheckElements() {
+  if (vibeCheckButton) {
+    vibeCheckButton.closest('.vibecheck-button-container')?.remove();
+    vibeCheckButton = null;
   }
 
   if (resultsOverlay) {
@@ -574,14 +574,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 function injectStyles() {
   const style = document.createElement('style');
   style.textContent = `
-    /* PreVibe Button */
-    .previbe-button-container {
+    /* VibeCheck Button */
+    .vibecheck-button-container {
       display: inline-flex;
       align-items: center;
       margin-left: 8px;
     }
 
-    .previbe-button {
+    .vibecheck-button {
       display: inline-flex;
       align-items: center;
       background: #eab308;
@@ -596,18 +596,18 @@ function injectStyles() {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     }
 
-    .previbe-button:hover {
+    .vibecheck-button:hover {
       background: #ca8a04;
       transform: scale(1.05);
     }
 
-    .previbe-button:disabled {
+    .vibecheck-button:disabled {
       background: #9ca3af;
       cursor: not-allowed;
       transform: none;
     }
 
-    .previbe-spinner {
+    .vibecheck-spinner {
       display: inline-block;
       width: 14px;
       height: 14px;
@@ -615,15 +615,15 @@ function injectStyles() {
       border: 2px solid rgba(255, 255, 255, 0.3);
       border-top-color: white;
       border-radius: 50%;
-      animation: previbe-spin 0.6s linear infinite;
+      animation: vibecheck-spin 0.6s linear infinite;
     }
 
-    @keyframes previbe-spin {
+    @keyframes vibecheck-spin {
       to { transform: rotate(360deg); }
     }
 
     /* Overlay */
-    .previbe-overlay {
+    .vibecheck-overlay {
       position: fixed;
       top: 0;
       left: 0;
@@ -634,15 +634,15 @@ function injectStyles() {
       align-items: center;
       justify-content: center;
       z-index: 10000;
-      animation: previbe-fadeIn 0.2s ease-out;
+      animation: vibecheck-fadeIn 0.2s ease-out;
     }
 
-    @keyframes previbe-fadeIn {
+    @keyframes vibecheck-fadeIn {
       from { opacity: 0; }
       to { opacity: 1; }
     }
 
-    .previbe-overlay-content {
+    .vibecheck-overlay-content {
       background: white;
       border-radius: 12px;
       max-width: 600px;
@@ -650,10 +650,10 @@ function injectStyles() {
       max-height: 80vh;
       overflow-y: auto;
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-      animation: previbe-slideUp 0.3s ease-out;
+      animation: vibecheck-slideUp 0.3s ease-out;
     }
 
-    @keyframes previbe-slideUp {
+    @keyframes vibecheck-slideUp {
       from {
         transform: translateY(20px);
         opacity: 0;
@@ -664,7 +664,7 @@ function injectStyles() {
       }
     }
 
-    .previbe-overlay-header {
+    .vibecheck-overlay-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -672,14 +672,14 @@ function injectStyles() {
       border-bottom: 2px solid #eab308;
     }
 
-    .previbe-overlay-header h2 {
+    .vibecheck-overlay-header h2 {
       margin: 0;
       font-size: 20px;
       color: #374151;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     }
 
-    .previbe-close-btn {
+    .vibecheck-close-btn {
       background: transparent;
       border: none;
       font-size: 32px;
@@ -695,16 +695,16 @@ function injectStyles() {
       transition: all 0.2s;
     }
 
-    .previbe-close-btn:hover {
+    .vibecheck-close-btn:hover {
       background: #f3f4f6;
       color: #374151;
     }
 
-    .previbe-overlay-body {
+    .vibecheck-overlay-body {
       padding: 20px;
     }
 
-    .previbe-result-item {
+    .vibecheck-result-item {
       padding: 12px;
       margin-bottom: 12px;
       background: #f9fafb;
@@ -713,38 +713,38 @@ function injectStyles() {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     }
 
-    .previbe-result-item strong {
+    .vibecheck-result-item strong {
       display: block;
       margin-bottom: 4px;
       color: #374151;
       font-size: 14px;
     }
 
-    .previbe-result-item span {
+    .vibecheck-result-item span {
       font-size: 14px;
       color: #6b7280;
     }
 
-    .previbe-capitalize {
+    .vibecheck-capitalize {
       text-transform: capitalize;
       font-weight: 600;
     }
 
-    .previbe-score {
+    .vibecheck-score {
       margin-left: 8px;
       color: #9ca3af;
       font-size: 13px;
     }
 
-    .previbe-note {
+    .vibecheck-note {
       margin-top: 8px;
       font-size: 13px;
       color: #6b7280;
       line-height: 1.5;
     }
 
-    .previbe-suggestions,
-    .previbe-risk-factors {
+    .vibecheck-suggestions,
+    .vibecheck-risk-factors {
       background: #eff6ff;
       border: 1px solid #bfdbfe;
       border-radius: 8px;
@@ -753,42 +753,42 @@ function injectStyles() {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     }
 
-    .previbe-risk-factors {
+    .vibecheck-risk-factors {
       background: #fef3c7;
       border-color: #fde68a;
     }
 
-    .previbe-suggestions strong,
-    .previbe-risk-factors strong {
+    .vibecheck-suggestions strong,
+    .vibecheck-risk-factors strong {
       display: block;
       margin-bottom: 8px;
       color: #1e40af;
       font-size: 14px;
     }
 
-    .previbe-risk-factors strong {
+    .vibecheck-risk-factors strong {
       color: #92400e;
     }
 
-    .previbe-suggestions ul,
-    .previbe-risk-factors ul {
+    .vibecheck-suggestions ul,
+    .vibecheck-risk-factors ul {
       margin: 0;
       padding-left: 20px;
     }
 
-    .previbe-suggestions li,
-    .previbe-risk-factors li {
+    .vibecheck-suggestions li,
+    .vibecheck-risk-factors li {
       margin-bottom: 4px;
       color: #1e3a8a;
       font-size: 13px;
       line-height: 1.5;
     }
 
-    .previbe-risk-factors li {
+    .vibecheck-risk-factors li {
       color: #78350f;
     }
 
-    .previbe-provider-badge {
+    .vibecheck-provider-badge {
       text-align: center;
       margin-top: 16px;
       padding-top: 16px;
@@ -799,7 +799,7 @@ function injectStyles() {
     }
 
     /* Error Toast */
-    .previbe-error-toast {
+    .vibecheck-error-toast {
       position: fixed;
       top: 20px;
       right: 20px;
@@ -812,11 +812,11 @@ function injectStyles() {
       z-index: 10001;
       font-size: 14px;
       font-weight: 500;
-      animation: previbe-slideIn 0.3s ease-out;
+      animation: vibecheck-slideIn 0.3s ease-out;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     }
 
-    @keyframes previbe-slideIn {
+    @keyframes vibecheck-slideIn {
       from {
         transform: translateX(100%);
         opacity: 0;

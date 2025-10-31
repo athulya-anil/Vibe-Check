@@ -6,12 +6,12 @@ let aiService = null;
 
 // Initialize AI service on startup
 chrome.runtime.onStartup.addListener(async () => {
-  console.log('🚀 PreVibe starting up...');
+  console.log('🚀 VibeCheck starting up...');
   await initializeAI();
 });
 
 chrome.runtime.onInstalled.addListener(async () => {
-  console.log("✅ PreVibe Chrome extension installed successfully!");
+  console.log("✅ VibeCheck Chrome extension installed successfully!");
   await initializeAI();
 });
 
