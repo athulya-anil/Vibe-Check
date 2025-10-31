@@ -63,8 +63,8 @@ function setupEventListeners() {
   // Settings
   document.getElementById('settingsBtn').addEventListener('click', openSettings);
   document.getElementById('closeSettingsBtn').addEventListener('click', closeSettings);
-  document.getElementById('settingsOverlay')?.addEventListener('click', (e) => {
-    // Only close if clicking directly on the overlay, not on child elements
+  document.getElementById('settingsPanel')?.addEventListener('click', (e) => {
+    // Only close if clicking directly on the panel background, not on the content
     if (e.target === e.currentTarget) {
       closeSettings();
     }

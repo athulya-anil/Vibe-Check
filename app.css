@@ -580,7 +580,7 @@ textarea:focus {
     background: rgba(0, 0, 0, 0.5);
     display: flex;
     align-items: center;
-    justify-center;
+    justify-content: center;
     z-index: 1000;
 }
 
@@ -591,6 +591,8 @@ textarea:focus {
     max-width: 500px;
     width: 90%;
     box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    position: relative;
+    z-index: 1001;
 }
 
 .settings-header {
@@ -886,16 +888,6 @@ textarea:focus {
     background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-/* Settings overlay */
-.settings-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0,0,0,0.5);
 }
 
 /* App container with sidebar */
