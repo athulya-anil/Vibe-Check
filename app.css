@@ -477,7 +477,6 @@ textarea:focus {
     padding: 2rem;
     margin-top: 2rem;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    border: 2px solid #1f2937;
 }
 
 .results-header {
@@ -495,7 +494,7 @@ textarea:focus {
 }
 
 .clear-btn {
-    background: #f56565;
+    background: #10b981;
     color: white;
     border: none;
     padding: 0.5rem 1.5rem;
@@ -506,7 +505,7 @@ textarea:focus {
 }
 
 .clear-btn:hover {
-    background: #e53e3e;
+    background: #059669;
     transform: translateY(-1px);
 }
 
@@ -952,6 +951,21 @@ textarea:focus {
     font-size: 0.9rem;
 }
 
+/* App Footer */
+.app-footer {
+    text-align: center;
+    padding: 2rem 1rem;
+    margin-top: 3rem;
+    border-top: 2px solid #e2e8f0;
+    background: white;
+}
+
+.app-footer small {
+    display: block;
+    color: #64748b;
+    margin-top: 0.5rem;
+}
+
 
 /* Ensure main content is visible */
 .main-content {
@@ -1290,6 +1304,15 @@ body.dark-theme .previbe-check-title {
 
 body.dark-theme .result-meta {
     color: #6b7280;
+}
+
+body.dark-theme .app-footer {
+    background: #111827;
+    border-top-color: #374151;
+}
+
+body.dark-theme .app-footer small {
+    color: #9ca3af;
 }
 
 /* Settings panel dark theme */

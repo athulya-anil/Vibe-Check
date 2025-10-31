@@ -454,7 +454,7 @@ function displayResults(analysis, text, hasImage = false) {
       </div>
     ` : ''}
 
-    <div class="result-meta" style="border-top: 2px solid #e2e8f0; padding-top: 1rem; margin-top: 1rem;">
+    <div class="result-meta">
       <div class="previbe-check-title">⚡ PreVibe Check</div>
       <small>Analyzed with: ${analysis.provider === 'chrome' ? '🟢 Chrome AI (On-device)' : '🟡 Google Gemini (Cloud)'}</small>
     </div>
@@ -508,6 +508,17 @@ async function loadHistory() {
   try {
     const result = await chrome.storage.local.get(['analysisHistory']);
     analysisHistory = result.analysisHistory || [];
+
+    // Filter out invalid history items that don't have analysis data
+    const validHistory = analysisHistory.filter(item => item && item.analysis && item.text);
+
+    // If we filtered out any items, update storage
+    if (validHistory.length !== analysisHistory.length) {
+      console.log(`Cleaned up ${analysisHistory.length - validHistory.length} invalid history items`);
+      analysisHistory = validHistory;
+      await saveHistory();
+    }
+
     renderHistory();
   } catch (error) {
     console.error('Failed to load history:', error);
@@ -538,26 +549,42 @@ function renderHistory() {
   }
 
   historyList.innerHTML = analysisHistory.map((item, index) => `
-    <div class="history-item ${currentAnalysis === item ? 'active' : ''}" onclick="loadAnalysisFromHistory(${index})">
+    <div class="history-item ${currentAnalysis === item ? 'active' : ''}" data-index="${index}">
       <div class="history-item-text">${escapeHtml(item.text.substring(0, 60))}${item.text.length > 60 ? '...' : ''}</div>
       <div class="history-item-date">${formatDate(item.timestamp)}</div>
     </div>
   `).join('');
+
+  // Add click handlers using event delegation
+  historyList.querySelectorAll('.history-item').forEach(item => {
+    item.addEventListener('click', function() {
+      const index = parseInt(this.dataset.index);
+      loadAnalysisFromHistory(index);
+    });
+  });
 }
 
 /**
  * Load analysis from history
  */
-window.loadAnalysisFromHistory = function(index) {
+function loadAnalysisFromHistory(index) {
   const item = analysisHistory[index];
   if (!item) return;
 
   currentAnalysis = item;
-  document.getElementById('contentInput').value = item.text;
-  displayResults(item.analysis, item.text, item.hasImage || false);
-  renderHistory();
+
+  // Switch to manual tab first
   switchTab('manual');
-};
+
+  // Populate the text input
+  document.getElementById('contentInput').value = item.text;
+
+  // Display the saved results
+  displayResults(item.analysis, item.text, item.hasImage || false);
+
+  // Update history rendering to show active state
+  renderHistory();
+}
 
 /**
  * Clear history
