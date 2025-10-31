@@ -717,6 +717,25 @@ function loadAnalysisFromHistory(index) {
 
   currentAnalysis = item;
 
+  // Clear uploaded file states when loading from history
+  uploadedTranscript = null;
+  uploadedImage = null;
+
+  // Clear file info displays
+  const transcriptInfoEl = document.getElementById('transcriptInfo');
+  if (transcriptInfoEl) {
+    transcriptInfoEl.style.display = 'none';
+    transcriptInfoEl.classList.remove('show');
+    transcriptInfoEl.innerHTML = '';
+  }
+
+  const imageInfoEl = document.getElementById('imageInfo');
+  if (imageInfoEl) {
+    imageInfoEl.style.display = 'none';
+    imageInfoEl.classList.remove('show');
+    imageInfoEl.innerHTML = '';
+  }
+
   // Switch to appropriate tab based on source
   if (item.source === 'youtube') {
     switchTab('youtube');
