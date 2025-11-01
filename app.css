@@ -890,6 +890,54 @@ textarea:focus {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
+/* Button row for side-by-side buttons */
+.button-row {
+    display: flex;
+    gap: 1rem;
+    align-items: stretch;
+}
+
+.button-row > * {
+    flex: 1;
+}
+
+/* Voice input button */
+.voice-btn-secondary {
+    display: inline-block;
+    background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+    color: white;
+    padding: 0.875rem 1.5rem;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.2s;
+    text-align: center;
+    white-space: normal;
+    line-height: 1.4;
+}
+
+.voice-btn-secondary:hover {
+    background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.voice-btn-secondary.listening {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
 /* App container with sidebar */
 .app-container {
     display: flex;
@@ -1226,6 +1274,19 @@ body.dark-theme .upload-btn-secondary {
 body.dark-theme .upload-btn-secondary:hover {
     background: #4b5563;
     border-color: #1f2937;
+}
+
+body.dark-theme .voice-btn-secondary {
+    background: #374151;
+    color: #e5e7eb;
+}
+
+body.dark-theme .voice-btn-secondary:hover {
+    background: #4b5563;
+}
+
+body.dark-theme .voice-btn-secondary.listening {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
 }
 
 body.dark-theme .file-info {

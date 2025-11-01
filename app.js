@@ -75,6 +75,7 @@ function setupEventListeners() {
   document.getElementById('transcriptUploadFull').addEventListener('change', handleTranscriptUpload);
   document.getElementById('imageUploadFull').addEventListener('change', handleImageUpload);
   document.getElementById('analyzeManualBtn').addEventListener('click', analyzeManualContent);
+  document.getElementById('voiceInputBtn').addEventListener('click', startVoiceInput);
 
   // YouTube tab
   document.getElementById('fetchYoutubeBtn').addEventListener('click', fetchYoutubeAndAnalyze);
@@ -306,6 +307,116 @@ function removeImage() {
   }
 
   console.log('✅ Image removed successfully');
+}
+
+/**
+ * Voice recognition instance
+ */
+let recognition = null;
+let isListening = false;
+
+/**
+ * Start voice input using Web Speech API
+ */
+function startVoiceInput() {
+  const textarea = document.getElementById('contentInput');
+  const btn = document.getElementById('voiceInputBtn');
+  const btnText = document.getElementById('voiceInputBtnText');
+
+  // Check browser support
+  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    alert('Voice recognition is not supported in your browser. Please use Chrome, Edge, or Safari.');
+    return;
+  }
+
+  // If already listening, stop
+  if (isListening && recognition) {
+    recognition.stop();
+    return;
+  }
+
+  // Create recognition instance
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SpeechRecognition();
+
+  // Configure recognition
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.lang = 'en-US';
+
+  let finalTranscript = textarea.value; // Keep existing text
+
+  // Handle recognition start
+  recognition.onstart = () => {
+    isListening = true;
+    btn.classList.add('listening');
+    btnText.textContent = '🎤 Listening... (Click to stop)';
+    console.log('🎤 Voice recognition started');
+  };
+
+  // Handle recognition results
+  recognition.onresult = (event) => {
+    let interimTranscript = '';
+
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      const transcript = event.results[i][0].transcript;
+      if (event.results[i].isFinal) {
+        finalTranscript += (finalTranscript ? ' ' : '') + transcript;
+      } else {
+        interimTranscript += transcript;
+      }
+    }
+
+    // Update textarea with final + interim results
+    textarea.value = finalTranscript + (interimTranscript ? ' ' + interimTranscript : '');
+  };
+
+  // Handle recognition end
+  recognition.onend = () => {
+    isListening = false;
+    btn.classList.remove('listening');
+    btnText.textContent = '🎤 Don\'t want to type? Use your voice';
+    console.log('🎤 Voice recognition ended');
+
+    // Auto-scroll textarea to bottom
+    textarea.scrollTop = textarea.scrollHeight;
+  };
+
+  // Handle recognition errors
+  recognition.onerror = (event) => {
+    console.error('🎤 Speech recognition error:', event.error);
+    isListening = false;
+    btn.classList.remove('listening');
+    btnText.textContent = '🎤 Don\'t want to type? Use your voice';
+
+    let errorMessage = 'Voice recognition error: ';
+    switch (event.error) {
+      case 'no-speech':
+        errorMessage += 'No speech detected. Please try again.';
+        break;
+      case 'audio-capture':
+        errorMessage += 'No microphone found. Please check your microphone settings.';
+        break;
+      case 'not-allowed':
+        errorMessage += 'Microphone access denied. Please allow microphone access in your browser settings.';
+        break;
+      case 'network':
+        errorMessage += 'Network error. Please check your internet connection.';
+        break;
+      default:
+        errorMessage += event.error;
+    }
+
+    alert(errorMessage);
+  };
+
+  // Start recognition
+  try {
+    recognition.start();
+  } catch (error) {
+    console.error('🎤 Failed to start recognition:', error);
+    alert('Failed to start voice recognition: ' + error.message);
+  }
 }
 
 /**
